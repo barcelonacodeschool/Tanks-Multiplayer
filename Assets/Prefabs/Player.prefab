@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8549681575736332501}
   - component: {fileID: 20887800063696827}
+  - component: {fileID: 382069745778284024}
   m_Layer: 0
   m_Name: Tower
   m_TagString: Untagged
@@ -86,6 +87,36 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &382069745778284024
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1342122288138719839}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc0b2762a88b1654bbc157576d1457b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SyncPositionX: 0
+  SyncPositionY: 0
+  SyncPositionZ: 0
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 1
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &1557802628550205038
 GameObject:
   m_ObjectHideFlags: 0
@@ -465,7 +496,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 267475728739805447}
-  - component: {fileID: 1952796950766098703}
+  - component: {fileID: 4904079601857292235}
   - component: {fileID: 6546369174398696902}
   m_Layer: 0
   m_Name: Tracks
@@ -492,7 +523,7 @@ Transform:
   - {fileID: 7917821967312655682}
   m_Father: {fileID: 4993458000713271156}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1952796950766098703
+--- !u!114 &4904079601857292235
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -501,7 +532,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6821674975901625806}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Script: {fileID: 11500000, guid: dc0b2762a88b1654bbc157576d1457b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   SyncPositionX: 0
@@ -577,7 +608,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1872194542824134095}
   - component: {fileID: 1689390956558768211}
-  - component: {fileID: 5357816175543546337}
+  - component: {fileID: 831626756612126964}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -621,7 +652,7 @@ MonoBehaviour:
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
---- !u!114 &5357816175543546337
+--- !u!114 &831626756612126964
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -630,7 +661,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 7359187430027195626}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Script: {fileID: 11500000, guid: dc0b2762a88b1654bbc157576d1457b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   SyncPositionX: 1
