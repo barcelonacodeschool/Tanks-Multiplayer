@@ -12,11 +12,17 @@ public class ProjectileLauncher : NetworkBehaviour
     [SerializeField] private Transform projectileSpawnPoint; // Transform where projectiles will be spawned
     [SerializeField] private GameObject serverProjectilePrefab; // Prefab used for projectiles on the server
     [SerializeField] private GameObject clientProjectilePrefab; // Prefab used for projectiles on the client
+    [SerializeField] private GameObject muzzleFlash; // Reference to the muzzle flash GameObject
+    [SerializeField] private Collider2D playerCollider; // Reference to the player's collider
 
     [Header("Settings")]
     [SerializeField] private float projectileSpeed; // Speed of the projectiles
+    [SerializeField] private float fireRate; // Rate of fire for the projectiles
+    [SerializeField] private float muzzleFlashDuration; // Duration of the muzzle flash effect
 
     private bool shouldFire; // Flag to track if the primary fire action should be performed
+    private float previousFireTime; // Timestamp of the last fire event
+    private float muzzleFlashTimer; // Timer for the muzzle flash effect
 
     // This method is called when the network object is spawned
     public override void OnNetworkSpawn()
@@ -39,15 +45,30 @@ public class ProjectileLauncher : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
+        // Handle muzzle flash timer
+        if (muzzleFlashTimer > 0f)
+        {
+            muzzleFlashTimer -= Time.deltaTime; // Decrease the timer by the time elapsed since last frame
+
+            if (muzzleFlashTimer <= 0f)
+            {
+                muzzleFlash.SetActive(false); // Disable the muzzle flash when the timer runs out
+            }
+        }
+
         if (!IsOwner) { return; } // Check if the local player owns this object
 
         if (!shouldFire) { return; } // Check if the primary fire action should be performed
+
+        if (Time.time < (1 / fireRate) + previousFireTime) { return; } // Enforce fire rate limit
 
         // Call the server RPC to handle projectile firing on the server
         PrimaryFireServerRpc(projectileSpawnPoint.position, projectileSpawnPoint.up);
 
         // Spawn a dummy projectile on the client for visual feedback
         SpawnDummyProjectile(projectileSpawnPoint.position, projectileSpawnPoint.up);
+
+        previousFireTime = Time.time; // Update the timestamp of the last fire event
     }
 
     // Method to handle the primary fire input action
@@ -69,6 +90,15 @@ public class ProjectileLauncher : NetworkBehaviour
         // Set the projectile's direction
         projectileInstance.transform.up = direction;
 
+        // Ignore collision between the player and the projectile
+        Physics2D.IgnoreCollision(playerCollider, projectileInstance.GetComponent<Collider2D>());
+
+        // Set the projectile's velocity if it has a Rigidbody2D component
+        if (projectileInstance.TryGetComponent<Rigidbody2D>(out Rigidbody2D rb))
+        {
+            rb.velocity = rb.transform.up * projectileSpeed;
+        }
+
         // Call the client RPC to spawn dummy projectiles on all clients
         SpawnDummyProjectileClientRpc(spawnPos, direction);
     }
@@ -86,6 +116,10 @@ public class ProjectileLauncher : NetworkBehaviour
     // Method to spawn a dummy projectile
     void SpawnDummyProjectile(Vector3 spawnPos, Vector3 direction)
     {
+        // Activate the muzzle flash effect
+        muzzleFlash.SetActive(true);
+        muzzleFlashTimer = muzzleFlashDuration; // Reset the muzzle flash timer
+
         // Instantiate the dummy projectile on the client
         GameObject projectileInstance = Instantiate(
             clientProjectilePrefab,
@@ -94,5 +128,14 @@ public class ProjectileLauncher : NetworkBehaviour
 
         // Set the projectile's direction
         projectileInstance.transform.up = direction;
+
+        // Ignore collision between the player and the projectile
+        Physics2D.IgnoreCollision(playerCollider, projectileInstance.GetComponent<Collider2D>());
+
+        // Set the projectile's velocity if it has a Rigidbody2D component
+        if (projectileInstance.TryGetComponent<Rigidbody2D>(out Rigidbody2D rb))
+        {
+            rb.velocity = rb.transform.up * projectileSpeed;
+        }
     }
 }
