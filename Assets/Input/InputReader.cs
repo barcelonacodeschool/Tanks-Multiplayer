@@ -15,6 +15,8 @@ public class InputReader : ScriptableObject, IPlayerActions
     public event Action<Vector2> MoveEvent; // Event for movement input, with a Vector2 parameter representing direction
     public event Action<bool> PrimaryFireEvent; // Event for primary fire input, with a bool parameter indicating if the action is performed or not
 
+    public Vector2 AimPosition { get; private set; } // Property to store the aim position as a Vector2
+
     private Controls controls; // Reference to the input controls, defined in another script (Controls)
 
     // This method is called when the script is enabled (e.g., when the game starts)
@@ -51,5 +53,13 @@ public class InputReader : ScriptableObject, IPlayerActions
         {
             PrimaryFireEvent?.Invoke(false); // Invoke the PrimaryFireEvent with false to indicate stopping fire
         }
+    }
+
+    // This method is called when the aim input action is triggered
+    // InputSystem calls this method automatically based on player input
+    public void OnAim(InputAction.CallbackContext context)
+    {
+        // Read the aim position from the input and store it in AimPosition
+        AimPosition = context.ReadValue<Vector2>();
     }
 }
