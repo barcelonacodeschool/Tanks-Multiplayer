@@ -14,16 +14,18 @@ public class ProjectileLauncher : NetworkBehaviour
     [SerializeField] private GameObject clientProjectilePrefab; // Prefab used for projectiles on the client
     [SerializeField] private GameObject muzzleFlash; // Reference to the muzzle flash GameObject
     [SerializeField] private Collider2D playerCollider; // Reference to the player's collider
+    [SerializeField] private CoinWallet wallet; // Reference to the player's coin wallet
 
     [Header("Settings")]
     [SerializeField] private float projectileSpeed; // Speed of the projectiles
     [SerializeField] private float fireRate; // Rate of fire for the projectiles
     [SerializeField] private float muzzleFlashDuration; // Duration of the muzzle flash effect
+    [SerializeField] private int costToFire; // Cost in coins to fire a projectile
 
     private bool shouldFire; // Flag to track if the primary fire action should be performed
-    private float previousFireTime; // Timestamp of the last fire event
+    private float timer; // Timer to control the rate of fire
     private float muzzleFlashTimer; // Timer for the muzzle flash effect
-
+    
     // This method is called when the network object is spawned
     public override void OnNetworkSpawn()
     {
@@ -58,9 +60,16 @@ public class ProjectileLauncher : NetworkBehaviour
 
         if (!IsOwner) { return; } // Check if the local player owns this object
 
+        if (timer > 0)
+        {
+            timer -= Time.deltaTime; // Decrease the fire rate timer by the time elapsed since last frame
+        }
+
         if (!shouldFire) { return; } // Check if the primary fire action should be performed
 
-        if (Time.time < (1 / fireRate) + previousFireTime) { return; } // Enforce fire rate limit
+        if (timer > 0) { return; } // Ensure the fire rate interval has passed
+
+        if (wallet.TotalCoins.Value < costToFire) { return; } // Check if the player has enough coins to fire
 
         // Call the server RPC to handle projectile firing on the server
         PrimaryFireServerRpc(projectileSpawnPoint.position, projectileSpawnPoint.up);
@@ -68,7 +77,7 @@ public class ProjectileLauncher : NetworkBehaviour
         // Spawn a dummy projectile on the client for visual feedback
         SpawnDummyProjectile(projectileSpawnPoint.position, projectileSpawnPoint.up);
 
-        previousFireTime = Time.time; // Update the timestamp of the last fire event
+        timer = 1 / fireRate; // Reset the fire rate timer
     }
 
     // Method to handle the primary fire input action
@@ -81,6 +90,10 @@ public class ProjectileLauncher : NetworkBehaviour
     [ServerRpc]
     void PrimaryFireServerRpc(Vector3 spawnPos, Vector3 direction)
     {
+        if (wallet.TotalCoins.Value < costToFire) { return; } // Check if the player has enough coins to fire
+
+        wallet.SpendCoins(costToFire); // Deduct the cost to fire from the player's wallet
+
         // Instantiate the projectile on the server
         GameObject projectileInstance = Instantiate(
             serverProjectilePrefab,
