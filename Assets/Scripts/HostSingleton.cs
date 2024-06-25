@@ -8,7 +8,7 @@ public class HostSingleton : MonoBehaviour
 {
     private static HostSingleton instance; // Static instance of HostSingleton
 
-    private HostGameManager gameManager; // Instance of the host game manager
+    public HostGameManager GameManager { get; private set; } // Instance of the host game manager
 
     // Property to get the single instance of HostSingleton
     public static HostSingleton Instance
@@ -38,6 +38,6 @@ public class HostSingleton : MonoBehaviour
     // Method to create and initialize the host
     public void CreateHost()
     {
-        gameManager = new HostGameManager(); // Instantiate the host game manager
+        GameManager = new HostGameManager(); // Instantiate the host game manager
     }
 }
