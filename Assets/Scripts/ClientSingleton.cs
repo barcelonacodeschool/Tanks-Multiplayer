@@ -8,7 +8,7 @@ public class ClientSingleton : MonoBehaviour
 {
     private static ClientSingleton instance; // Static instance of ClientSingleton
 
-    private ClientGameManager gameManager; // Instance of the client game manager
+    public ClientGameManager GameManager { get; private set; } // Public property to access the game manager instance
 
     // Property to get the single instance of ClientSingleton
     public static ClientSingleton Instance
@@ -21,25 +21,48 @@ public class ClientSingleton : MonoBehaviour
 
             if (instance == null)
             {
-                Debug.LogError("No ClientSingleton in the scene!"); // Log an error if no instance found
+                Debug.LogError("No ClientSingleton in the scene"); // Log an error if no instance found
                 return null;
             }
 
+            //Debug.Log("ClientSingleton instance found.");
             return instance;
         }
     }
 
+    private bool isClientCreated = false; // Flag to track if the client is already created
+
     // This method is called when the script instance is being loaded
-    private void Start()
+    private async void Start()
     {
         DontDestroyOnLoad(gameObject); // Prevent this game object from being destroyed on scene load
+        //Debug.Log("ClientSingleton Start method called.");
+
+        if (!isClientCreated)
+        {
+            isClientCreated = true; // Set flag to indicate client creation in progress
+            bool clientCreated = await CreateClient(); // Create the client asynchronously
+            //Debug.Log($"Client creation result: {clientCreated}");
+
+            if (clientCreated)
+            {
+                GameManager.GoToMenu(); // Navigate to the menu if client creation is successful
+            }
+        }
     }
 
     // Method to create and initialize the client asynchronously
-    public async Task CreateClient()
+    public async Task<bool> CreateClient()
     {
-        gameManager = new ClientGameManager(); // Instantiate the client game manager
+        if (GameManager == null)
+        {
+            GameManager = new ClientGameManager(); // Instantiate the client game manager
+            //Debug.Log("ClientGameManager instance created.");
+        }
 
-        await gameManager.InitAsync(); // Initialize the game manager asynchronously
+        bool initResult = await GameManager.InitAsync(); // Initialize the game manager asynchronously
+        //Debug.Log($"ClientGameManager initialization result: {initResult}");
+
+        return initResult; // Return the initialization result
     }
 }
