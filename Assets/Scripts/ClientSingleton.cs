@@ -25,7 +25,7 @@ public class ClientSingleton : MonoBehaviour
                 return null;
             }
 
-            //Debug.Log("ClientSingleton instance found.");
+            Debug.Log("ClientSingleton instance found.");
             return instance;
         }
     }
@@ -36,13 +36,13 @@ public class ClientSingleton : MonoBehaviour
     private async void Start()
     {
         DontDestroyOnLoad(gameObject); // Prevent this game object from being destroyed on scene load
-        //Debug.Log("ClientSingleton Start method called.");
+        Debug.Log("ClientSingleton Start method called.");
 
         if (!isClientCreated)
         {
             isClientCreated = true; // Set flag to indicate client creation in progress
             bool clientCreated = await CreateClient(); // Create the client asynchronously
-            //Debug.Log($"Client creation result: {clientCreated}");
+            Debug.Log($"Client creation result: {clientCreated}");
 
             if (clientCreated)
             {
@@ -57,11 +57,11 @@ public class ClientSingleton : MonoBehaviour
         if (GameManager == null)
         {
             GameManager = new ClientGameManager(); // Instantiate the client game manager
-            //Debug.Log("ClientGameManager instance created.");
+            Debug.Log("ClientGameManager instance created.");
         }
 
         bool initResult = await GameManager.InitAsync(); // Initialize the game manager asynchronously
-        //Debug.Log($"ClientGameManager initialization result: {initResult}");
+        Debug.Log($"ClientGameManager initialization result: {initResult}");
 
         return initResult; // Return the initialization result
     }

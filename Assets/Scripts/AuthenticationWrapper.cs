@@ -13,17 +13,17 @@ public static class AuthenticationWrapper
     // Method to perform authentication, retries up to a maximum number of tries
     public static async Task<AuthState> DoAuth(int maxTries = 5)
     {
-        //Debug.Log("Starting authentication...");
+        Debug.Log("Starting authentication...");
 
         if (AuthState == AuthState.Authenticated)
         {
-            //Debug.Log("Already authenticated.");
+            Debug.Log("Already authenticated.");
             return AuthState; // Return if already authenticated
         }
 
         if (AuthState == AuthState.Authenticating)
         {
-            //Debug.LogWarning("Already in the process of authenticating.");
+            Debug.LogWarning("Already in the process of authenticating.");
             return await authTaskCompletionSource.Task;  // Wait for the current authentication to complete
         }
 
@@ -33,7 +33,7 @@ public static class AuthenticationWrapper
         int tries = 0;
         while (AuthState == AuthState.Authenticating && tries < maxTries)
         {
-            //Debug.Log($"Attempt {tries + 1} to authenticate...");
+            Debug.Log($"Attempt {tries + 1} to authenticate...");
 
             try
             {
@@ -42,27 +42,27 @@ public static class AuthenticationWrapper
                 if (AuthenticationService.Instance.IsSignedIn && AuthenticationService.Instance.IsAuthorized)
                 {
                     AuthState = AuthState.Authenticated; // Set state to authenticated if sign-in is successful
-                    //Debug.Log("Authentication successful.");
+                    Debug.Log("Authentication successful.");
                     authTaskCompletionSource.SetResult(AuthState); // Set the result for the task completion source
                     break;
                 }
             }
             catch (AuthenticationException ex)
             {
-                //Debug.LogError($"Authentication failed with exception: {ex.Message}");
+                Debug.LogError($"Authentication failed with exception: {ex.Message}");
                 AuthState = AuthState.Error; // Set state to error if an exception occurs
                 authTaskCompletionSource.SetResult(AuthState); // Set the result for the task completion source
                 break;
             }
 
             tries++;
-            //Debug.LogWarning("Authentication failed. Retrying...");
+            Debug.LogWarning("Authentication failed. Retrying...");
             await Task.Delay(2000); // Wait for 2 seconds before retrying
         }
 
         if (AuthState != AuthState.Authenticated)
         {
-            //Debug.LogError("Authentication failed after maximum retries.");
+            Debug.LogError("Authentication failed after maximum retries.");
             AuthState = AuthState.Error; // Set state to error if maximum retries are reached
             authTaskCompletionSource.SetResult(AuthState); // Set the result for the task completion source
         }
