@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
@@ -19,6 +20,9 @@ public class HostGameManager
     private string joinCode; // Join code for clients to join the relay server
     private string lobbyId; // ID of the created lobby
 
+    // Field to store the network server instance
+    private NetworkServer networkServer;
+
     private const int MaxConnections = 20; // Maximum number of connections to the relay server
     private const string GameSceneName = "Game"; // Name of the game scene
 
@@ -27,22 +31,25 @@ public class HostGameManager
     {
         try
         {
-            allocation = await Relay.Instance.CreateAllocationAsync(MaxConnections); // Create relay allocation
+            // Create an allocation for the game relay with the maximum number of connections
+            allocation = await Relay.Instance.CreateAllocationAsync(MaxConnections);
         }
         catch (Exception e)
         {
-            Debug.Log(e); // Log any exceptions
+            // Log any exceptions that occur during allocation creation
+            Debug.Log(e);
             return;
         }
 
         try
         {
-            joinCode = await Relay.Instance.GetJoinCodeAsync(allocation.AllocationId); // Get join code for the relay allocation
+            // Get the join code for the allocation
+            joinCode = await Relay.Instance.GetJoinCodeAsync(allocation.AllocationId);
             Debug.Log(joinCode); // Log the join code
         }
         catch (Exception e)
         {
-            Debug.Log(e); // Log any exceptions
+            Debug.Log(e); // Log any exceptions that occur while getting the join code
             return;
         }
 
@@ -53,6 +60,7 @@ public class HostGameManager
 
         try
         {
+            // Set up lobby options and create a lobby
             CreateLobbyOptions lobbyOptions = new CreateLobbyOptions();
             lobbyOptions.IsPrivate = false; // Set the lobby to be public
             lobbyOptions.Data = new Dictionary<string, DataObject>()
@@ -64,20 +72,36 @@ public class HostGameManager
                     )
                 }
             };
+            // Get the player's name and create a lobby with it
+            string playerName = PlayerPrefs.GetString(NameSelector.PlayerNameKey, "Unknown");
             Lobby lobby = await Lobbies.Instance.CreateLobbyAsync(
-                "My Lobby", MaxConnections, lobbyOptions); // Create the lobby
+                $"{playerName}'s Lobby", MaxConnections, lobbyOptions);
 
             lobbyId = lobby.Id; // Store the lobby ID
-
             HostSingleton.Instance.StartCoroutine(HearbeatLobby(15)); // Start the lobby heartbeat coroutine
         }
         catch (LobbyServiceException e)
         {
-            Debug.Log(e); // Log any exceptions
+            Debug.Log(e); // Log any exceptions that occur while creating the lobby
             return;
         }
 
-        NetworkManager.Singleton.StartHost(); // Start the host
+        // Initialize the network server
+        networkServer = new NetworkServer(NetworkManager.Singleton);
+
+        // Prepare connection data with the user's name
+        UserData userData = new UserData
+        {
+            userName = PlayerPrefs.GetString(NameSelector.PlayerNameKey, "Missing Name")
+        };
+        string payload = JsonUtility.ToJson(userData);
+        byte[] payloadBytes = Encoding.UTF8.GetBytes(payload);
+
+        // Set the connection data for the network manager
+        NetworkManager.Singleton.NetworkConfig.ConnectionData = payloadBytes;
+
+        // Start hosting the game
+        NetworkManager.Singleton.StartHost();
 
         NetworkManager.Singleton.SceneManager.LoadScene(GameSceneName, LoadSceneMode.Single); // Load the game scene
     }
@@ -85,7 +109,7 @@ public class HostGameManager
     // Coroutine to send heartbeat pings to keep the lobby alive
     private IEnumerator HearbeatLobby(float waitTimeSeconds)
     {
-        WaitForSecondsRealtime delay = new WaitForSecondsRealtime(waitTimeSeconds); // Create delay object
+        WaitForSecondsRealtime delay = new WaitForSecondsRealtime(waitTimeSeconds); // Create a delay object to wait between pings
         while (true)
         {
             Lobbies.Instance.SendHeartbeatPingAsync(lobbyId); // Send heartbeat ping

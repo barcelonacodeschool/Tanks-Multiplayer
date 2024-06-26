@@ -13,7 +13,7 @@ public class NameSelector : MonoBehaviour
     [SerializeField] private int minNameLength = 1; // Minimum length for the player name
     [SerializeField] private int maxNameLength = 12; // Maximum length for the player name
 
-    private const string PlayerNameKey = "PlayerName"; // Key to store and retrieve the player name in PlayerPrefs
+    public const string PlayerNameKey = "PlayerName"; // Key to store and retrieve the player name in PlayerPrefs
 
     // This method is called when the script instance is being loaded
     private void Start()
