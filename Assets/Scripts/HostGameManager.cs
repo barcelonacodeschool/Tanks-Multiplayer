@@ -15,7 +15,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 // HostGameManager manages host-side game operations, including starting a host and managing lobbies
-public class HostGameManager
+public class HostGameManager : IDisposable
 {
     private Allocation allocation; // Allocation for creating a relay server
     private string joinCode; // Join code for clients to join the relay server
@@ -94,7 +94,7 @@ public class HostGameManager
         UserData userData = new UserData
         {
             userName = PlayerPrefs.GetString(NameSelector.PlayerNameKey, "Missing Name"),
-            userAuthId = AuthenticationService.Instance.PlayerId
+            userAuthId = AuthenticationService.Instance.PlayerId // Set the authentication ID
         };
         string payload = JsonUtility.ToJson(userData);
         byte[] payloadBytes = Encoding.UTF8.GetBytes(payload);
@@ -117,5 +117,30 @@ public class HostGameManager
             Lobbies.Instance.SendHeartbeatPingAsync(lobbyId); // Send heartbeat ping
             yield return delay; // Wait for the specified delay time
         }
+    }
+
+    // Dispose method to clean up resources
+    public async void Dispose()
+    {
+        // Stop the heartbeat coroutine
+        HostSingleton.Instance.StopCoroutine(nameof(HearbeatLobby));
+
+        // Delete the lobby if it exists
+        if (!string.IsNullOrEmpty(lobbyId))
+        {
+            try
+            {
+                await Lobbies.Instance.DeleteLobbyAsync(lobbyId);
+            }
+            catch (LobbyServiceException e)
+            {
+                Debug.Log(e);
+            }
+
+            lobbyId = string.Empty;
+        }
+
+        // Dispose of the network server if it's not null
+        networkServer?.Dispose();
     }
 }

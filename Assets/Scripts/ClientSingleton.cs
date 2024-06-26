@@ -65,4 +65,11 @@ public class ClientSingleton : MonoBehaviour
 
         return initResult; // Return the initialization result
     }
+
+    // Dispose method to clean up resources
+    private void OnDestroy()
+    {
+        // Dispose of the game manager if it's not null
+        GameManager?.Dispose();
+    }
 }

@@ -40,4 +40,11 @@ public class HostSingleton : MonoBehaviour
     {
         GameManager = new HostGameManager(); // Instantiate the host game manager
     }
+
+    // Dispose method to clean up resources
+    private void OnDestroy()
+    {
+        // Dispose of the game manager if it's not null
+        GameManager?.Dispose();
+    }
 }

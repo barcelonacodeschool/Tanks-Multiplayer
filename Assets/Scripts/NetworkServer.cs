@@ -5,7 +5,7 @@ using Unity.Netcode;
 using UnityEngine;
 
 // This class represents a network server in Unity using the Netcode for GameObjects package
-public class NetworkServer
+public class NetworkServer : IDisposable
 {
     // Private field to store the NetworkManager instance
     private NetworkManager networkManager;
@@ -66,6 +66,23 @@ public class NetworkServer
             clientIdToAuth.Remove(clientId);
             // Remove the user data from the auth-to-user data dictionary
             authIdToUserData.Remove(authId);
+        }
+    }
+
+    // Dispose method to clean up resources
+    public void Dispose()
+    {
+        if (networkManager == null) { return; }
+
+        // Unsubscribe from events to prevent memory leaks
+        networkManager.ConnectionApprovalCallback -= ApprovalCheck;
+        networkManager.OnClientDisconnectCallback -= OnClientDisconnect;
+        networkManager.OnServerStarted -= OnNetworkReady;
+
+        // Shut down the network manager if it is still listening
+        if (networkManager.IsListening)
+        {
+            networkManager.Shutdown();
         }
     }
 }

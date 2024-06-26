@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -5,7 +6,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 // Class to manage client-side network operations
-public class NetworkClient
+public class NetworkClient : IDisposable
 {
     // Private field to store the NetworkManager instance
     private NetworkManager networkManager;
@@ -38,6 +39,16 @@ public class NetworkClient
         if (networkManager.IsConnectedClient)
         {
             networkManager.Shutdown();
+        }
+    }
+
+    // Dispose method to clean up resources
+    public void Dispose()
+    {
+        // Unsubscribe from the OnClientDisconnectCallback event if the network manager is not null
+        if (networkManager != null)
+        {
+            networkManager.OnClientDisconnectCallback -= OnClientDisconnect;
         }
     }
 }

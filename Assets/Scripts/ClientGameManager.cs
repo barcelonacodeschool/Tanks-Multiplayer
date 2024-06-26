@@ -14,7 +14,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 // ClientGameManager manages client-side game operations, including initialization and scene management
-public class ClientGameManager
+public class ClientGameManager : IDisposable
 {
     private JoinAllocation allocation; // Allocation for joining a relay server
 
@@ -75,5 +75,12 @@ public class ClientGameManager
         NetworkManager.Singleton.NetworkConfig.ConnectionData = payloadBytes; // Set the connection data for the NetworkManager
 
         NetworkManager.Singleton.StartClient(); // Start the client
+    }
+
+    // Dispose method to clean up resources
+    public void Dispose()
+    {
+        // Dispose of the network client if it's not null
+        networkClient?.Dispose();
     }
 }
