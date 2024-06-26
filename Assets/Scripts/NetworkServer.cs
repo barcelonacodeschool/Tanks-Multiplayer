@@ -10,6 +10,11 @@ public class NetworkServer
     // Private field to store the NetworkManager instance
     private NetworkManager networkManager;
 
+    // Dictionary to map client IDs to their authentication IDs
+    private Dictionary<ulong, string> clientIdToAuth = new Dictionary<ulong, string>();
+    // Dictionary to map authentication IDs to their user data
+    private Dictionary<string, UserData> authIdToUserData = new Dictionary<string, UserData>();
+
     // Constructor to initialize the NetworkServer with a NetworkManager instance
     public NetworkServer(NetworkManager networkManager)
     {
@@ -17,6 +22,9 @@ public class NetworkServer
 
         // Subscribe to the ConnectionApprovalCallback event to handle connection approvals
         networkManager.ConnectionApprovalCallback += ApprovalCheck;
+
+        // Subscribe to the OnServerStarted event to handle network initialization
+        networkManager.OnServerStarted += OnNetworkReady;
     }
 
     // Method to handle connection approval checks
@@ -30,12 +38,34 @@ public class NetworkServer
         // Deserialize the payload into a UserData object
         UserData userData = JsonUtility.FromJson<UserData>(payload);
 
-        // Log the user name to the console for debugging purposes
-        Debug.Log(userData.userName);
+        // Map the client ID to the authentication ID
+        clientIdToAuth[request.ClientNetworkId] = userData.userAuthId;
+        // Map the authentication ID to the user data
+        authIdToUserData[userData.userAuthId] = userData;
 
         // Approve the connection request
         response.Approved = true;
         // Indicate that a player object should be created for this connection
         response.CreatePlayerObject = true;
+    }
+
+    // Method called when the network is ready
+    private void OnNetworkReady()
+    {
+        // Subscribe to the OnClientDisconnectCallback event to handle client disconnections
+        networkManager.OnClientDisconnectCallback += OnClientDisconnect;
+    }
+
+    // Method to handle client disconnections
+    private void OnClientDisconnect(ulong clientId)
+    {
+        // Try to get the authentication ID for the disconnecting client
+        if (clientIdToAuth.TryGetValue(clientId, out string authId))
+        {
+            // Remove the client ID from the client-to-auth dictionary
+            clientIdToAuth.Remove(clientId);
+            // Remove the user data from the auth-to-user data dictionary
+            authIdToUserData.Remove(authId);
+        }
     }
 }

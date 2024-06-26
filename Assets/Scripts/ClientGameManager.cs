@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport.Relay;
+using Unity.Services.Authentication;
 using Unity.Services.Core;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
@@ -17,12 +18,16 @@ public class ClientGameManager
 {
     private JoinAllocation allocation; // Allocation for joining a relay server
 
+    private NetworkClient networkClient; // Network client instance to manage network-related operations
+
     private const string MenuSceneName = "Main Menu"; // Name of the main menu scene
 
     // Method to initialize Unity services and authenticate the client asynchronously
     public async Task<bool> InitAsync()
     {
         await UnityServices.InitializeAsync(); // Initialize Unity services
+
+        networkClient = new NetworkClient(NetworkManager.Singleton); // Create a new NetworkClient instance with the singleton NetworkManager
 
         AuthState authState = await AuthenticationWrapper.DoAuth(); // Perform authentication
 
@@ -58,9 +63,11 @@ public class ClientGameManager
         RelayServerData relayServerData = new RelayServerData(allocation, "dtls"); // Create relay server data using the allocation
         transport.SetRelayServerData(relayServerData); // Set the relay server data for the transport
 
+        // Create a UserData object with the player's name and authentication ID
         UserData userData = new UserData
         {
-            userName = PlayerPrefs.GetString(NameSelector.PlayerNameKey, "Missing Name") // Retrieve the player name from PlayerPrefs
+            userName = PlayerPrefs.GetString(NameSelector.PlayerNameKey, "Missing Name"), // Retrieve the player name from PlayerPrefs
+            userAuthId = AuthenticationService.Instance.PlayerId // Retrieve the player ID from the AuthenticationService
         };
         string payload = JsonUtility.ToJson(userData); // Serialize the user data to JSON
         byte[] payloadBytes = Encoding.UTF8.GetBytes(payload); // Encode the JSON to bytes
