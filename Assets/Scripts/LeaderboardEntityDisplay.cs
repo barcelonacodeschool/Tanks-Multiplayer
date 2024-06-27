@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using Unity.Collections;
+using Unity.Netcode;
 using UnityEngine;
 
 // Class to display leaderboard entity information
@@ -9,6 +10,8 @@ public class LeaderboardEntityDisplay : MonoBehaviour
 {
     // Reference to the TMP_Text component to display the information
     [SerializeField] private TMP_Text displayText;
+    // Color for the player's display text if it's the local player
+    [SerializeField] private Color myColour;
 
     // Private field to store the player's name
     private FixedString32Bytes playerName;
@@ -23,6 +26,13 @@ public class LeaderboardEntityDisplay : MonoBehaviour
         ClientId = clientId; // Set the client ID
         this.playerName = playerName; // Set the player's name
 
+        // Check if the client ID is the same as the local client ID
+        if (clientId == NetworkManager.Singleton.LocalClientId)
+        {
+            // Change the text color to the specified color for the local player
+            displayText.color = myColour;
+        }
+
         UpdateCoins(coins); // Update the coin display
     }
 
@@ -34,10 +44,10 @@ public class LeaderboardEntityDisplay : MonoBehaviour
         UpdateText(); // Update the displayed text
     }
 
-    // Private method to update the displayed text
-    private void UpdateText()
+    // Method to update the displayed text
+    public void UpdateText()
     {
-        // Set the display text to show the player's name and coin count
-        displayText.text = $"[1] {playerName} - {Coins}";
+        // Set the display text to show the player's ranking, name, and coin count
+        displayText.text = $"[{transform.GetSiblingIndex() + 1}] {playerName} - {Coins}";
     }
 }

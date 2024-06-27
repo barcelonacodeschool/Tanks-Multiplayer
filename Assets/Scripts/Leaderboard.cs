@@ -12,6 +12,8 @@ public class Leaderboard : NetworkBehaviour
     [SerializeField] private Transform leaderboardEntityHolder;
     // Reference to the prefab for displaying leaderboard entities
     [SerializeField] private LeaderboardEntityDisplay leaderboardEntityPrefab;
+    // Number of entities to display on the leaderboard
+    [SerializeField] private int entitiesToDisplay = 8;
 
     // Network list to store the state of leaderboard entities
     private NetworkList<LeaderboardEntityState> leaderboardEntities;
@@ -119,6 +121,34 @@ public class Leaderboard : NetworkBehaviour
                     displayToUpdate.UpdateCoins(changeEvent.Value.Coins);
                 }
                 break;
+        }
+        // Sort the displays by the coin count in descending order
+        entityDisplays.Sort((x, y) => y.Coins.CompareTo(x.Coins));
+
+        // Update the display order and visibility based on the sorted list
+        for (int i = 0; i < entityDisplays.Count; i++)
+        {
+            // Set the sibling index to maintain the visual order
+            entityDisplays[i].transform.SetSiblingIndex(i);
+            // Update the text to reflect the new order
+            entityDisplays[i].UpdateText();
+            // Activate or deactivate the display based on the index
+            entityDisplays[i].gameObject.SetActive(i <= entitiesToDisplay - 1);
+        }
+
+        // Find the local player's display
+        LeaderboardEntityDisplay myDisplay =
+            entityDisplays.FirstOrDefault(x => x.ClientId == NetworkManager.Singleton.LocalClientId);
+
+        // Ensure the local player's display is visible if it is outside the top entities
+        if (myDisplay != null)
+        {
+            if (myDisplay.transform.GetSiblingIndex() >= entitiesToDisplay)
+            {
+                // Hide the last display in the top list and show the local player's display
+                leaderboardEntityHolder.GetChild(entitiesToDisplay - 1).gameObject.SetActive(false);
+                myDisplay.gameObject.SetActive(true);
+            }
         }
     }
 
