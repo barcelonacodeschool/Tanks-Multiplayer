@@ -17,7 +17,7 @@ public class RespawnHandler : NetworkBehaviour
         if (!IsServer) { return; }
 
         // Find all existing players and handle their spawn
-        TankPlayer[] players = FindObjectsOfType<TankPlayer>();
+        TankPlayer[] players = FindObjectsByType<TankPlayer>(FindObjectsSortMode.None);
         foreach (TankPlayer player in players)
         {
             HandlePlayerSpawned(player);
