@@ -12,6 +12,7 @@ public class TankPlayer : NetworkBehaviour
     [Header("References")]
     [SerializeField] private CinemachineVirtualCamera virtualCamera; // Reference to the virtual camera
     [field: SerializeField] public Health Health { get; private set; } // Reference to the Health component
+    [field: SerializeField] public CoinWallet Wallet { get; private set; } // Reference to the Wallet component
 
     [Header("Settings")]
     [SerializeField] private int ownerPriority = 15; // Priority setting for the owner's camera

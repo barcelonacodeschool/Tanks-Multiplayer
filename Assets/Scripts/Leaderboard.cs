@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -13,6 +15,8 @@ public class Leaderboard : NetworkBehaviour
 
     // Network list to store the state of leaderboard entities
     private NetworkList<LeaderboardEntityState> leaderboardEntities;
+    // List to store the instantiated leaderboard entity displays
+    private List<LeaderboardEntityDisplay> entityDisplays = new List<LeaderboardEntityDisplay>();
 
     // Update is called once per frame
     private void Awake()
@@ -77,11 +81,43 @@ public class Leaderboard : NetworkBehaviour
         switch (changeEvent.Type)
         {
             case NetworkListEvent<LeaderboardEntityState>.EventType.Add:
-                // Instantiate a new leaderboard entity display when an entity is added
-                Instantiate(leaderboardEntityPrefab, leaderboardEntityHolder);
+                // Check if the entity is already displayed
+                if (!entityDisplays.Any(x => x.ClientId == changeEvent.Value.ClientId))
+                {
+                    // Instantiate a new leaderboard entity display when an entity is added
+                    LeaderboardEntityDisplay leaderboardEntity =
+                        Instantiate(leaderboardEntityPrefab, leaderboardEntityHolder);
+                    // Initialize the display with the entity data
+                    leaderboardEntity.Initialise(
+                        changeEvent.Value.ClientId,
+                        changeEvent.Value.PlayerName,
+                        changeEvent.Value.Coins);
+                    // Add the display to the list of displays
+                    entityDisplays.Add(leaderboardEntity);
+                }
                 break;
             case NetworkListEvent<LeaderboardEntityState>.EventType.Remove:
-                // Handle the removal of leaderboard entities if needed
+                // Find the display to remove
+                LeaderboardEntityDisplay displayToRemove =
+                    entityDisplays.FirstOrDefault(x => x.ClientId == changeEvent.Value.ClientId);
+                if (displayToRemove != null)
+                {
+                    // Remove the display from the parent and destroy it
+                    displayToRemove.transform.SetParent(null);
+                    Destroy(displayToRemove.gameObject);
+                    // Remove the display from the list
+                    entityDisplays.Remove(displayToRemove);
+                }
+                break;
+            case NetworkListEvent<LeaderboardEntityState>.EventType.Value:
+                // Find the display to update
+                LeaderboardEntityDisplay displayToUpdate =
+                    entityDisplays.FirstOrDefault(x => x.ClientId == changeEvent.Value.ClientId);
+                if (displayToUpdate != null)
+                {
+                    // Update the coins in the display
+                    displayToUpdate.UpdateCoins(changeEvent.Value.Coins);
+                }
                 break;
         }
     }
@@ -96,6 +132,10 @@ public class Leaderboard : NetworkBehaviour
             PlayerName = player.PlayerName.Value,
             Coins = 0
         });
+
+        // Subscribe to changes in the player's coin count
+        player.Wallet.TotalCoins.OnValueChanged += (oldCoins, newCoins) =>
+            HandleCoinsChanged(player.OwnerClientId, newCoins);
     }
 
     // Method to handle player despawn events
@@ -108,6 +148,30 @@ public class Leaderboard : NetworkBehaviour
 
             leaderboardEntities.Remove(entity);
             break;
+        }
+
+        // Unsubscribe from changes in the player's coin count
+        player.Wallet.TotalCoins.OnValueChanged -= (oldCoins, newCoins) =>
+            HandleCoinsChanged(player.OwnerClientId, newCoins);
+    }
+
+    // Method to handle changes in the player's coin count
+    private void HandleCoinsChanged(ulong clientId, int newCoins)
+    {
+        // Update the coin count in the leaderboard entity
+        for (int i = 0; i < leaderboardEntities.Count; i++)
+        {
+            if (leaderboardEntities[i].ClientId != clientId) { continue; }
+
+            // Create a new leaderboard entity state with updated coins
+            leaderboardEntities[i] = new LeaderboardEntityState
+            {
+                ClientId = leaderboardEntities[i].ClientId,
+                PlayerName = leaderboardEntities[i].PlayerName,
+                Coins = newCoins
+            };
+
+            return;
         }
     }
 }
