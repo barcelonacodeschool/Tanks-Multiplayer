@@ -1,18 +1,23 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class Leaderboard : MonoBehaviour
+// Class to manage the leaderboard in a networked game
+public class Leaderboard : NetworkBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    // Reference to the parent transform that will hold leaderboard entities
+    [SerializeField] private Transform leaderboardEntityHolder;
+    // Reference to the prefab for displaying leaderboard entities
+    [SerializeField] private LeaderboardEntityDisplay leaderboardEntityPrefab;
+
+    // Network list to store the state of leaderboard entities
+    private NetworkList<LeaderboardEntityState> leaderboardEntities;
 
     // Update is called once per frame
-    void Update()
+    private void Awake()
     {
-        
+        // Initialize the network list for leaderboard entities
+        leaderboardEntities = new NetworkList<LeaderboardEntityState>();
     }
 }

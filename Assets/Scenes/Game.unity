@@ -232,6 +232,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 275445765}
+  - component: {fileID: 275445767}
+  - component: {fileID: 275445766}
   m_Layer: 0
   m_Name: GameHUD
   m_TagString: Untagged
@@ -255,6 +257,40 @@ Transform:
   - {fileID: 1219930030}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &275445766
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 275445764}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 1393261262
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+--- !u!114 &275445767
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 275445764}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f82ab1132c5cc7344b4899d18bd0502e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  leaderboardEntityHolder: {fileID: 1273563647}
+  leaderboardEntityPrefab: {fileID: 9119621001988366026, guid: 72661d8450534c946b1a34c6260e814c, type: 3}
 --- !u!4 &310351292 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4473643586432965041, guid: 78454804d84bdd54f9826fbcd255defb, type: 3}
