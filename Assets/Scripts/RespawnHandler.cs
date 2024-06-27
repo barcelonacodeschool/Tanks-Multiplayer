@@ -7,8 +7,10 @@ using UnityEngine;
 // Class to handle player respawning in a networked game
 public class RespawnHandler : NetworkBehaviour
 {
-    // Reference to the player prefab
-    [SerializeField] private NetworkObject playerPrefab;
+    // Reference to the player prefab for respawning
+    [SerializeField] private TankPlayer playerPrefab;
+    // Percentage of coins the player keeps on respawn
+    [SerializeField] private float keptCoinPercentage;
 
     // Method called when the network object is spawned
     public override void OnNetworkSpawn()
@@ -56,23 +58,30 @@ public class RespawnHandler : NetworkBehaviour
     // Method to handle player death
     private void HandlePlayerDie(TankPlayer player)
     {
+        // Calculate the amount of coins the player keeps on respawn
+        int keptCoins = (int)(player.Wallet.TotalCoins.Value * (keptCoinPercentage / 100));
+
         // Destroy the player's game object
         Destroy(player.gameObject);
 
-        // Start the respawn coroutine
-        StartCoroutine(RespawnPlayer(player.OwnerClientId));
+        // Start the coroutine to respawn the player
+        StartCoroutine(RespawnPlayer(player.OwnerClientId, keptCoins));
     }
 
     // Coroutine to respawn the player
-    private IEnumerator RespawnPlayer(ulong ownerClientId)
+    private IEnumerator RespawnPlayer(ulong ownerClientId, int keptCoins)
     {
-        yield return null; // Wait for the next frame
+        // Wait for the next frame
+        yield return null;
 
-        // Instantiate the player prefab at a random spawn position
-        NetworkObject playerInstance = Instantiate(
+        // Instantiate a new player instance at a random spawn position
+        TankPlayer playerInstance = Instantiate(
             playerPrefab, SpawnPoint.GetRandomSpawnPos(), Quaternion.identity);
 
-        // Spawn the player object for the given client ID
-        playerInstance.SpawnAsPlayerObject(ownerClientId);
+        // Spawn the new player instance as a networked player object
+        playerInstance.NetworkObject.SpawnAsPlayerObject(ownerClientId);
+
+        // Add the kept coins to the new player instance's wallet
+        playerInstance.Wallet.TotalCoins.Value += keptCoins;
     }
 }
