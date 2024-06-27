@@ -69,6 +69,24 @@ public class NetworkServer : IDisposable
         }
     }
 
+    // Method to get user data by client ID
+    public UserData GetUserDataByClientId(ulong clientId)
+    {
+        // Try to get the authentication ID for the given client ID
+        if (clientIdToAuth.TryGetValue(clientId, out string authId))
+        {
+            // Try to get the user data for the given authentication ID
+            if (authIdToUserData.TryGetValue(authId, out UserData data))
+            {
+                return data; // Return the user data if found
+            }
+
+            return null; // Return null if user data not found
+        }
+
+        return null; // Return null if authentication ID not found
+    }
+
     // Dispose method to clean up resources
     public void Dispose()
     {

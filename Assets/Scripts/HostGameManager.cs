@@ -22,7 +22,7 @@ public class HostGameManager : IDisposable
     private string lobbyId; // ID of the created lobby
 
     // Field to store the network server instance
-    private NetworkServer networkServer;
+    public NetworkServer NetworkServer { get; private set; }
 
     private const int MaxConnections = 20; // Maximum number of connections to the relay server
     private const string GameSceneName = "Game"; // Name of the game scene
@@ -88,7 +88,7 @@ public class HostGameManager : IDisposable
         }
 
         // Initialize the network server
-        networkServer = new NetworkServer(NetworkManager.Singleton);
+        NetworkServer = new NetworkServer(NetworkManager.Singleton);
 
         // Prepare connection data with the user's name
         UserData userData = new UserData
@@ -141,6 +141,6 @@ public class HostGameManager : IDisposable
         }
 
         // Dispose of the network server if it's not null
-        networkServer?.Dispose();
+        NetworkServer?.Dispose();
     }
 }
