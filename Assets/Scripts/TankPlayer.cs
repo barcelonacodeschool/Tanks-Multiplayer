@@ -11,11 +11,13 @@ public class TankPlayer : NetworkBehaviour
 {
     [Header("References")]
     [SerializeField] private CinemachineVirtualCamera virtualCamera; // Reference to the virtual camera
+    [SerializeField] private SpriteRenderer minimapIconRenderer; // Reference to the Sprite Renderer
     [field: SerializeField] public Health Health { get; private set; } // Reference to the Health component
     [field: SerializeField] public CoinWallet Wallet { get; private set; } // Reference to the Wallet component
 
     [Header("Settings")]
     [SerializeField] private int ownerPriority = 15; // Priority setting for the owner's camera
+    [SerializeField] private Color ownerColor; // Color for the owner's minimap icon
 
     public NetworkVariable<FixedString32Bytes> PlayerName = new NetworkVariable<FixedString32Bytes>(); // Network variable to store the player's name
 
@@ -45,6 +47,9 @@ public class TankPlayer : NetworkBehaviour
         {
             // Set the camera priority for the owner
             virtualCamera.Priority = ownerPriority;
+
+            // Set the minimap icon color for the owner
+            minimapIconRenderer.color = ownerColor;
         }
     }
 
