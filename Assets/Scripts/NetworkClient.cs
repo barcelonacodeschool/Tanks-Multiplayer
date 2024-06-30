@@ -29,6 +29,11 @@ public class NetworkClient : IDisposable
         // Check if the disconnected client is not the local client or a special client ID
         if (clientId != 0 && clientId != networkManager.LocalClientId) { return; }
 
+        Disconnect();
+    }
+
+    public void Disconnect()
+    {
         // Check if the active scene is not the menu scene, and if so, load the menu scene
         if (SceneManager.GetActiveScene().name != MenuSceneName)
         {

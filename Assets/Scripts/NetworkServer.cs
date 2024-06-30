@@ -10,6 +10,9 @@ public class NetworkServer : IDisposable
     // Private field to store the NetworkManager instance
     private NetworkManager networkManager;
 
+    // Action event triggered when a client disconnects
+    public Action<string> OnClientLeft;
+
     // Dictionary to map client IDs to their authentication IDs
     private Dictionary<ulong, string> clientIdToAuth = new Dictionary<ulong, string>();
     // Dictionary to map authentication IDs to their user data
@@ -71,6 +74,8 @@ public class NetworkServer : IDisposable
             clientIdToAuth.Remove(clientId);
             // Remove the user data from the auth-to-user data dictionary
             authIdToUserData.Remove(authId);
+            // Invoke the OnClientLeft event with the authentication ID
+            OnClientLeft?.Invoke(authId);
         }
     }
 

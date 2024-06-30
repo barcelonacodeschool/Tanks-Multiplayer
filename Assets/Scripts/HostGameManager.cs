@@ -105,7 +105,11 @@ public class HostGameManager : IDisposable
         // Start hosting the game
         NetworkManager.Singleton.StartHost();
 
-        NetworkManager.Singleton.SceneManager.LoadScene(GameSceneName, LoadSceneMode.Single); // Load the game scene
+        // Register a callback for when clients leave
+        NetworkServer.OnClientLeft += HandleClientLeft;
+
+        // Load the game scene
+        NetworkManager.Singleton.SceneManager.LoadScene(GameSceneName, LoadSceneMode.Single);
     }
 
     // Coroutine to send heartbeat pings to keep the lobby alive
@@ -119,8 +123,14 @@ public class HostGameManager : IDisposable
         }
     }
 
-    // Dispose method to clean up resources
-    public async void Dispose()
+    public void Dispose()
+    {
+        // Call the shutdown method to clean up resources
+        Shutdown();
+    }
+
+    // Shutdown method to clean up resources
+    public async void Shutdown()
     {
         // Stop the heartbeat coroutine
         HostSingleton.Instance.StopCoroutine(nameof(HearbeatLobby));
@@ -140,7 +150,24 @@ public class HostGameManager : IDisposable
             lobbyId = string.Empty;
         }
 
+        // Unregister the client left event
+        NetworkServer.OnClientLeft -= HandleClientLeft;
+
         // Dispose of the network server if it's not null
         NetworkServer?.Dispose();
+    }
+
+    // Handle the event when a client leaves the lobby
+    private async void HandleClientLeft(string authId)
+    {
+        try
+        {
+            // Attempt to remove the player from the lobby
+            await LobbyService.Instance.RemovePlayerAsync(lobbyId, authId);
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.Log(e); // Log any exceptions during player removal
+        }
     }
 }
