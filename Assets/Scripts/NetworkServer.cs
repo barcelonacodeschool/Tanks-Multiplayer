@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 
 // This class represents a network server in Unity using the Netcode for GameObjects package
@@ -28,6 +29,14 @@ public class NetworkServer : IDisposable
 
         // Subscribe to the OnServerStarted event to handle network initialization
         networkManager.OnServerStarted += OnNetworkReady;
+    }
+
+    // Method to open a network connection with the specified IP and port
+    public bool OpenConnection(string ip, int port)
+    {
+        UnityTransport transport = networkManager.gameObject.GetComponent<UnityTransport>(); // Get the UnityTransport component
+        transport.SetConnectionData(ip, (ushort)port); // Set the connection data
+        return networkManager.StartServer(); // Start the network server
     }
 
     // Method to handle connection approval checks

@@ -8,6 +8,7 @@ public class ApplicationController : MonoBehaviour
 {
     [SerializeField] private ClientSingleton clientPrefab; // Reference to the client singleton prefab
     [SerializeField] private HostSingleton hostPrefab; // Reference to the host singleton prefab
+    [SerializeField] private ServerSingleton serverPrefab; // Reference to the server singleton prefab
 
     // This method is called when the script instance is being loaded
     private async void Start()
@@ -23,7 +24,14 @@ public class ApplicationController : MonoBehaviour
     {
         if (isDedicatedServer)
         {
-            // Dedicated server specific logic (if any) can be added here
+            // Instantiate the server singleton
+            ServerSingleton serverSingleton = Instantiate(serverPrefab);
+
+            // Create the server
+            await serverSingleton.CreateServer();
+
+            // Start the game server asynchronously
+            await serverSingleton.GameManager.StartGameServerAsync(); 
         }
         else
         {
