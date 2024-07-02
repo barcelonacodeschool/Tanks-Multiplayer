@@ -12,6 +12,7 @@ public class TankPlayer : NetworkBehaviour
     [Header("References")]
     [SerializeField] private CinemachineVirtualCamera virtualCamera; // Reference to the virtual camera
     [SerializeField] private SpriteRenderer minimapIconRenderer; // Reference to the Sprite Renderer
+    [SerializeField] private Texture2D crosshair; // Reference to the crosshair texture
     [field: SerializeField] public Health Health { get; private set; } // Reference to the Health component
     [field: SerializeField] public CoinWallet Wallet { get; private set; } // Reference to the Wallet component
 
@@ -50,6 +51,9 @@ public class TankPlayer : NetworkBehaviour
 
             // Set the minimap icon color for the owner
             minimapIconRenderer.color = ownerColor;
+
+            // Set the cursor to the crosshair texture
+            Cursor.SetCursor(crosshair, new Vector2(crosshair.width / 2, crosshair.height / 2), CursorMode.Auto);
         }
     }
 
