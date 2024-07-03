@@ -95,13 +95,14 @@ public class ClientGameManager : IDisposable
     }
 
     // Method to perform matchmaking asynchronously
-    public async void MatchmakeAsync(Action<MatchmakerPollingResult> onMatchmakeResponse)
+    public async void MatchmakeAsync(bool isTeamQueue, Action<MatchmakerPollingResult> onMatchmakeResponse)
     {
         if (matchmaker.IsMatchmaking)
         {
             return;
         }
 
+        userData.userGamePreferences.gameQueue = isTeamQueue ? GameQueue.Team : GameQueue.Solo; // Set game queue preference
         MatchmakerPollingResult matchResult = await GetMatchAsync(); // Get match result
         onMatchmakeResponse?.Invoke(matchResult); // Invoke the response callback
     }

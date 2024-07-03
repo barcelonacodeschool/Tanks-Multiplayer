@@ -36,7 +36,7 @@ public class HostGameManager : IDisposable
     }
 
     // Method to start the host asynchronously
-    public async Task StartHostAsync()
+    public async Task StartHostAsync(bool isPrivate)
     {
         try
         {
@@ -71,7 +71,7 @@ public class HostGameManager : IDisposable
         {
             // Set up lobby options and create a lobby
             CreateLobbyOptions lobbyOptions = new CreateLobbyOptions();
-            lobbyOptions.IsPrivate = false; // Set the lobby to be public
+            lobbyOptions.IsPrivate = isPrivate; // Set the lobby visibility
             lobbyOptions.Data = new Dictionary<string, DataObject>()
             {
                 {

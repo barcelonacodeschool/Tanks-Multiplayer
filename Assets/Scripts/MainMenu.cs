@@ -5,6 +5,7 @@ using TMPro;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MainMenu : MonoBehaviour
 {
@@ -12,6 +13,8 @@ public class MainMenu : MonoBehaviour
     [SerializeField] private TMP_Text queueTimerText; // Text field to display queue timer
     [SerializeField] private TMP_Text findMatchButtonText; // Text field for the find match button
     [SerializeField] private TMP_InputField joinCodeField; // Input field for the join code
+    [SerializeField] private Toggle teamToggle; // Toggle for team-based matchmaking
+    [SerializeField] private Toggle privateToggle; // Toggle for private lobbies
 
     private bool isMatchmaking; // Flag to indicate if matchmaking is in progress
     private bool isCancelling; // Flag to indicate if matchmaking cancellation is in progress
@@ -61,7 +64,7 @@ public class MainMenu : MonoBehaviour
 
         if (isBusy) { return; } // Return if another operation is in progress
 
-        ClientSingleton.Instance.GameManager.MatchmakeAsync(OnMatchMade); // Start matchmaking asynchronously
+        ClientSingleton.Instance.GameManager.MatchmakeAsync(teamToggle.isOn, OnMatchMade); // Start matchmaking asynchronously
         findMatchButtonText.text = "Cancel"; // Update the button text
         queueStatusText.text = "Searching..."; // Update the queue status text
         timeInQueue = 0f; // Reset the time in queue
@@ -99,7 +102,7 @@ public class MainMenu : MonoBehaviour
 
         isBusy = true; // Set busy flag
 
-        await HostSingleton.Instance.GameManager.StartHostAsync(); // Await the start of the host
+        await HostSingleton.Instance.GameManager.StartHostAsync(privateToggle.isOn); // Await the start of the host
 
         isBusy = false; // Reset busy flag
     }
