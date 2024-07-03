@@ -11,6 +11,11 @@ public class NetworkServer : IDisposable
     // Private field to store the NetworkManager instance
     private NetworkManager networkManager;
 
+    // Action event triggered when a user joins
+    public Action<UserData> OnUserJoined;
+    // Action event triggered when a user leaves
+    public Action<UserData> OnUserLeft;
+
     // Action event triggered when a client disconnects
     public Action<string> OnClientLeft;
 
@@ -55,6 +60,9 @@ public class NetworkServer : IDisposable
         // Map the authentication ID to the user data
         authIdToUserData[userData.userAuthId] = userData;
 
+        // Trigger the OnUserJoined event
+        OnUserJoined?.Invoke(userData);
+
         // Approve the connection request
         response.Approved = true;
 
@@ -81,6 +89,8 @@ public class NetworkServer : IDisposable
         {
             // Remove the client ID from the client-to-auth dictionary
             clientIdToAuth.Remove(clientId);
+            // Trigger the OnUserLeft event
+            OnUserLeft?.Invoke(authIdToUserData[authId]);
             // Remove the user data from the auth-to-user data dictionary
             authIdToUserData.Remove(authId);
             // Invoke the OnClientLeft event with the authentication ID
