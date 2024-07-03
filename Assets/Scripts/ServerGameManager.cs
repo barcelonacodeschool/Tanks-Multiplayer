@@ -15,6 +15,7 @@ using Unity.Services.Relay.Models;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+// ServerGameManager handles server-side game operations, including backfilling and match management
 public class ServerGameManager : IDisposable
 {
     // Variables to store server IP, port, and query port
@@ -36,11 +37,11 @@ public class ServerGameManager : IDisposable
     public ServerGameManager(string serverIP, int serverPort,
         int queryPort, NetworkManager manager, NetworkObject playerPrefab)
     {
-        this.serverIP = serverIP;
-        this.serverPort = serverPort;
-        this.queryPort = queryPort;
+        this.serverIP = serverIP; // Set server IP
+        this.serverPort = serverPort; // Set server port
+        this.queryPort = queryPort; // Set query port
 
-        // Initialize the network server with the provided network manager
+        // Initialize the network server with the provided network manager and player prefab
         NetworkServer = new NetworkServer(manager, playerPrefab);
 
         // Initialize the multiplay allocation service
@@ -123,8 +124,10 @@ public class ServerGameManager : IDisposable
     // Method to handle user joining
     private void UserJoined(UserData user)
     {
-        // Add the player to the backfill match
-        backfiller.AddPlayerToMatch(user);
+        // Get the team of the user
+        Team team = backfiller.GetTeamByUserId(user.userAuthId);
+        Debug.Log($"{user.userAuthId} {team.TeamId}");
+
         // Increment the player count in the multiplay allocation service
         multiplayAllocationService.AddPlayer();
 

@@ -34,7 +34,7 @@ public class MatchplayBackfiller : IDisposable
     // Constructor to initialize the backfiller with connection details and match properties
     public MatchplayBackfiller(string connection, string queueName, MatchProperties matchmakerPayloadProperties, int maxPlayers)
     {
-        this.maxPlayers = maxPlayers;
+        this.maxPlayers = maxPlayers; // Set the maximum number of players
 
         // Create backfill properties from matchmaker payload properties
         BackfillTicketProperties backfillProperties = new BackfillTicketProperties(matchmakerPayloadProperties);
@@ -42,16 +42,16 @@ public class MatchplayBackfiller : IDisposable
         // Initialize the local backfill ticket with the properties
         localBackfillTicket = new BackfillTicket
         {
-            Id = matchmakerPayloadProperties.BackfillTicketId,
-            Properties = backfillProperties
+            Id = matchmakerPayloadProperties.BackfillTicketId, // Set the backfill ticket ID
+            Properties = backfillProperties // Set the backfill properties
         };
 
         // Set up the options for creating a backfill ticket
         createBackfillOptions = new CreateBackfillTicketOptions
         {
-            Connection = connection,
-            QueueName = queueName,
-            Properties = backfillProperties
+            Connection = connection, // Set the connection string
+            QueueName = queueName, // Set the queue name
+            Properties = backfillProperties // Set the backfill properties
         };
     }
 
@@ -80,35 +80,6 @@ public class MatchplayBackfiller : IDisposable
         BackfillLoop();
     }
 
-    // Method to add a player to the match
-    public void AddPlayerToMatch(UserData userData)
-    {
-        // Check if backfilling is in progress
-        if (!IsBackfilling)
-        {
-            Debug.LogWarning("Can't add users to the backfill ticket before it's been created");
-            return;
-        }
-
-        // Check if the player is already in the match
-        if (GetPlayerById(userData.userAuthId) != null)
-        {
-            Debug.LogWarningFormat("User: {0} - {1} already in Match. Ignoring add.",
-                userData.userName,
-                userData.userAuthId);
-
-            return;
-        }
-
-        // Create a new player from user data and add to the match properties
-        Player matchmakerPlayer = new Player(userData.userAuthId, userData.userGamePreferences);
-        MatchProperties.Players.Add(matchmakerPlayer);
-        MatchProperties.Teams[0].PlayerIds.Add(matchmakerPlayer.Id);
-
-        // Set the local data dirty flag to indicate changes
-        localDataDirty = true;
-    }
-
     // Method to remove a player from the match
     public int RemovePlayerFromMatch(string userId)
     {
@@ -122,7 +93,7 @@ public class MatchplayBackfiller : IDisposable
 
         // Remove the player from match properties and set the dirty flag
         MatchProperties.Players.Remove(playerToRemove);
-        MatchProperties.Teams[0].PlayerIds.Remove(userId);
+        GetTeamByUserId(userId).PlayerIds.Remove(userId);
         localDataDirty = true;
 
         // Return the updated player count
@@ -133,6 +104,12 @@ public class MatchplayBackfiller : IDisposable
     public bool NeedsPlayers()
     {
         return MatchPlayerCount < maxPlayers;
+    }
+
+    // Method to get the team by user ID
+    public Team GetTeamByUserId(string userId)
+    {
+        return MatchProperties.Teams.FirstOrDefault(t => t.PlayerIds.Contains(userId));
     }
 
     // Helper method to find a player by ID
@@ -190,6 +167,6 @@ public class MatchplayBackfiller : IDisposable
     // Method to dispose of resources and stop backfilling
     public void Dispose()
     {
-        _ = StopBackfill();
+        _ = StopBackfill(); // Stop backfilling and dispose resources
     }
 }

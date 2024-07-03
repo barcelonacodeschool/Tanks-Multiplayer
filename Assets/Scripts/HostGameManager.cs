@@ -20,9 +20,9 @@ public class HostGameManager : IDisposable
     private Allocation allocation; // Allocation for creating a relay server
     private NetworkObject playerPrefab; // Reference to the player prefab
 
-    private string joinCode; // Join code for clients to join the relay server
     private string lobbyId; // ID of the created lobby
 
+    public string JoinCode { get; private set; }
     // Field to store the network server instance
     public NetworkServer NetworkServer { get; private set; }
 
@@ -53,8 +53,8 @@ public class HostGameManager : IDisposable
         try
         {
             // Get the join code for the allocation
-            joinCode = await Relay.Instance.GetJoinCodeAsync(allocation.AllocationId);
-            Debug.Log(joinCode); // Log the join code
+            JoinCode = await Relay.Instance.GetJoinCodeAsync(allocation.AllocationId);
+            Debug.Log(JoinCode); // Log the join code
         }
         catch (Exception e)
         {
@@ -77,7 +77,7 @@ public class HostGameManager : IDisposable
                 {
                     "JoinCode", new DataObject(
                         visibility: DataObject.VisibilityOptions.Member,
-                        value: joinCode // Store the join code in the lobby data
+                        value: JoinCode // Store the join code in the lobby data
                     )
                 }
             };
