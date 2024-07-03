@@ -19,6 +19,8 @@ public class ClientGameManager : IDisposable
     private JoinAllocation allocation; // Allocation for joining a relay server
 
     private NetworkClient networkClient; // Network client instance to manage network-related operations
+    private MatchplayMatchmaker matchmaker; // Instance for managing matchmaking
+    private UserData userData; // User data for the client
 
     private const string MenuSceneName = "Main Menu"; // Name of the main menu scene
 
@@ -28,11 +30,18 @@ public class ClientGameManager : IDisposable
         await UnityServices.InitializeAsync(); // Initialize Unity services
 
         networkClient = new NetworkClient(NetworkManager.Singleton); // Create a new NetworkClient instance with the singleton NetworkManager
+        matchmaker = new MatchplayMatchmaker(); // Initialize the matchmaker
 
         AuthState authState = await AuthenticationWrapper.DoAuth(); // Perform authentication
 
         if (authState == AuthState.Authenticated)
         {
+            // Create a UserData object with the player's name and authentication ID
+            userData = new UserData
+            {
+                userName = PlayerPrefs.GetString(NameSelector.PlayerNameKey, "Missing Name"),
+                userAuthId = AuthenticationService.Instance.PlayerId
+            };
             return true; // Return true if authentication is successful
         }
 
@@ -63,18 +72,25 @@ public class ClientGameManager : IDisposable
         RelayServerData relayServerData = new RelayServerData(allocation, "dtls"); // Create relay server data using the allocation
         transport.SetRelayServerData(relayServerData); // Set the relay server data for the transport
 
-        // Create a UserData object with the player's name and authentication ID
-        UserData userData = new UserData
-        {
-            userName = PlayerPrefs.GetString(NameSelector.PlayerNameKey, "Missing Name"), // Retrieve the player name from PlayerPrefs
-            userAuthId = AuthenticationService.Instance.PlayerId // Retrieve the player ID from the AuthenticationService
-        };
         string payload = JsonUtility.ToJson(userData); // Serialize the user data to JSON
         byte[] payloadBytes = Encoding.UTF8.GetBytes(payload); // Encode the JSON to bytes
 
         NetworkManager.Singleton.NetworkConfig.ConnectionData = payloadBytes; // Set the connection data for the NetworkManager
 
         NetworkManager.Singleton.StartClient(); // Start the client
+    }
+
+    // Method to get a match asynchronously
+    private async Task<MatchmakerPollingResult> GetMatchAsync()
+    {
+        MatchmakingResult matchmakingResult = await matchmaker.Matchmake(userData); // Perform matchmaking
+
+        if (matchmakingResult.result == MatchmakerPollingResult.Success)
+        {
+            // Connect to server (implementation not shown)
+        }
+
+        return matchmakingResult.result; // Return the matchmaking result
     }
 
     // Method to disconnect the client

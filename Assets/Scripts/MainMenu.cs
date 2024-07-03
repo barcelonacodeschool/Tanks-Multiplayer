@@ -10,6 +10,9 @@ public class MainMenu : MonoBehaviour
     [SerializeField] private TMP_Text findMatchButtonText; // Text field for the find match button
     [SerializeField] private TMP_InputField joinCodeField; // Input field for the join code
 
+    private bool isMatchmaking; // Flag to indicate if matchmaking is in progress
+    private bool isCancelling; // Flag to indicate if matchmaking cancellation is in progress
+
     // Method called when the script instance is being loaded
     private void Start()
     {
@@ -19,6 +22,29 @@ public class MainMenu : MonoBehaviour
 
         queueStatusText.text = string.Empty; // Clear the queue status text
         queueTimerText.text = string.Empty; // Clear the queue timer text
+    }
+
+    // Method called when the find match button is pressed
+    public async void FindMatchPressed()
+    {
+        if (isCancelling) { return; } // Return if cancellation is in progress
+
+        if (isMatchmaking)
+        {
+            queueStatusText.text = "Cancelling..."; // Update the queue status text
+            isCancelling = true;
+            // Cancel matchmaking (implementation not shown)
+            isCancelling = false;
+            isMatchmaking = false;
+            findMatchButtonText.text = "Find Match"; // Update the button text
+            queueStatusText.text = string.Empty; // Clear the queue status text
+            return;
+        }
+
+        // Start queue
+        findMatchButtonText.text = "Cancel"; // Update the button text
+        queueStatusText.text = "Searching..."; // Update the queue status text
+        isMatchmaking = true;
     }
 
     // Method to start the host asynchronously

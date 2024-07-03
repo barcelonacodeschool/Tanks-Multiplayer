@@ -33,6 +33,11 @@ public class GameInfo
 
     public string ToMultiplayQueue()
     {
-        return "";
+        return gameQueue switch
+        {
+            GameQueue.Solo => "solo-queue",
+            GameQueue.Team => "team-queue",
+            _ => "solo-queue" // underscore means Default
+        };
     }
 }
