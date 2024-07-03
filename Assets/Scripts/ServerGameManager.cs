@@ -31,18 +31,17 @@ public class ServerGameManager : IDisposable
     // Service for managing multiplay allocation
     private MultiplayAllocationService multiplayAllocationService;
 
-    // Constant for the game scene name
-    private const string GameSceneName = "Game";
-
-    // Constructor to initialize the server game manager with IP, port, query port, and network manager
-    public ServerGameManager(string serverIP, int serverPort, int queryPort, NetworkManager manager)
+    // Constructor to initialize the server game manager with IP, port,
+    // query port, network manager, and player prefab
+    public ServerGameManager(string serverIP, int serverPort,
+        int queryPort, NetworkManager manager, NetworkObject playerPrefab)
     {
         this.serverIP = serverIP;
         this.serverPort = serverPort;
         this.queryPort = queryPort;
 
         // Initialize the network server with the provided network manager
-        NetworkServer = new NetworkServer(manager);
+        NetworkServer = new NetworkServer(manager, playerPrefab);
 
         // Initialize the multiplay allocation service
         multiplayAllocationService = new MultiplayAllocationService();
@@ -85,9 +84,6 @@ public class ServerGameManager : IDisposable
             Debug.LogWarning("NetworkServer did not start as expected.");
             return;
         }
-
-        // Load the game scene
-        NetworkManager.Singleton.SceneManager.LoadScene(GameSceneName, LoadSceneMode.Single);
     }
 
     // Method to get the matchmaker payload asynchronously

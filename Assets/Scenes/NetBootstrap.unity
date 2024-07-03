@@ -170,6 +170,7 @@ MonoBehaviour:
   clientPrefab: {fileID: 387170976950115638, guid: 26b1eb3f15eaa204a8f9ed5ceb52dbf7, type: 3}
   hostPrefab: {fileID: 6165139298331338735, guid: 8e2c628f575f17941ba7853231838f72, type: 3}
   serverPrefab: {fileID: 9054785770465765126, guid: 7be865d80ae77e1428f6d104ad3018a9, type: 3}
+  playerPrefab: {fileID: 1689390956558768211, guid: d75c51a1a5c373046ae94f1cc75925e5, type: 3}
 --- !u!1 &137239027
 GameObject:
   m_ObjectHideFlags: 0
@@ -574,6 +575,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1937354040804579980, guid: c3439a5d100b7f448bf2c7cfd40dc206, type: 3}
+      propertyPath: NetworkConfig.PlayerPrefab
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 1937354040804579980, guid: c3439a5d100b7f448bf2c7cfd40dc206, type: 3}
       propertyPath: NetworkConfig.ConnectionApproval
       value: 1

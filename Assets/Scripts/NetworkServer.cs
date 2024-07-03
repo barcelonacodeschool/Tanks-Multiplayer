@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
@@ -10,6 +11,9 @@ public class NetworkServer : IDisposable
 {
     // Private field to store the NetworkManager instance
     private NetworkManager networkManager;
+
+    // Reference to the player prefab
+    private NetworkObject playerPrefab;
 
     // Action event triggered when a user joins
     public Action<UserData> OnUserJoined;
@@ -25,9 +29,10 @@ public class NetworkServer : IDisposable
     private Dictionary<string, UserData> authIdToUserData = new Dictionary<string, UserData>();
 
     // Constructor to initialize the NetworkServer with a NetworkManager instance
-    public NetworkServer(NetworkManager networkManager)
+    public NetworkServer(NetworkManager networkManager, NetworkObject playerPrefab)
     {
         this.networkManager = networkManager; // Assign the passed NetworkManager to the local field
+        this.playerPrefab = playerPrefab; // Assign the player prefab
 
         // Subscribe to the ConnectionApprovalCallback event to handle connection approvals
         networkManager.ConnectionApprovalCallback += ApprovalCheck;
@@ -63,15 +68,25 @@ public class NetworkServer : IDisposable
         // Trigger the OnUserJoined event
         OnUserJoined?.Invoke(userData);
 
+        // Spawn the player object after a delay
+        _ = SpawnPlayerDelayed(request.ClientNetworkId);
+
         // Approve the connection request
         response.Approved = true;
 
-        // Set the spawn position and rotation for the new player
-        response.Position = SpawnPoint.GetRandomSpawnPos();
-        response.Rotation = Quaternion.identity;
+        // Player object will be created manually
+        response.CreatePlayerObject = false;
+    }
 
-        // Indicate that a player object should be created for this connection
-        response.CreatePlayerObject = true;
+    // Method to spawn the player object after a delay
+    private async Task SpawnPlayerDelayed(ulong clientId)
+    {
+        // Wait for 1 second
+        await Task.Delay(1000);
+
+        // Instantiate and spawn the player object
+        NetworkObject playerInstance = GameObject.Instantiate(playerPrefab, SpawnPoint.GetRandomSpawnPos(), Quaternion.identity);
+        playerInstance.SpawnAsPlayerObject(clientId);
     }
 
     // Method called when the network is ready

@@ -40,7 +40,7 @@ public class ServerSingleton : MonoBehaviour
     }
 
     // Asynchronous method to create the server
-    public async Task CreateServer()
+    public async Task CreateServer(NetworkObject playerPrefab)
     {
         // Initialize Unity Services
         await UnityServices.InitializeAsync();
@@ -50,7 +50,8 @@ public class ServerSingleton : MonoBehaviour
             ApplicationData.IP(),
             ApplicationData.Port(),
             ApplicationData.QPort(),
-            NetworkManager.Singleton
+            NetworkManager.Singleton,
+            playerPrefab
         );
     }
 

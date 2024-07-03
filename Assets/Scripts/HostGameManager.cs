@@ -18,6 +18,8 @@ using UnityEngine.SceneManagement;
 public class HostGameManager : IDisposable
 {
     private Allocation allocation; // Allocation for creating a relay server
+    private NetworkObject playerPrefab; // Reference to the player prefab
+
     private string joinCode; // Join code for clients to join the relay server
     private string lobbyId; // ID of the created lobby
 
@@ -26,6 +28,12 @@ public class HostGameManager : IDisposable
 
     private const int MaxConnections = 20; // Maximum number of connections to the relay server
     private const string GameSceneName = "Game"; // Name of the game scene
+
+    // Constructor to initialize HostGameManager with a player prefab
+    public HostGameManager(NetworkObject playerPrefab)
+    {
+        this.playerPrefab = playerPrefab; // Assign the player prefab
+    }
 
     // Method to start the host asynchronously
     public async Task StartHostAsync()
@@ -87,8 +95,8 @@ public class HostGameManager : IDisposable
             return;
         }
 
-        // Initialize the network server
-        NetworkServer = new NetworkServer(NetworkManager.Singleton);
+        // Initialize the network server with player prefab
+        NetworkServer = new NetworkServer(NetworkManager.Singleton, playerPrefab);
 
         // Prepare connection data with the user's name
         UserData userData = new UserData

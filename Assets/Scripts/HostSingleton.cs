@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Unity.Netcode;
 using UnityEngine;
 
 // HostSingleton ensures a single instance of the host manager and handles its initialization
@@ -36,9 +37,9 @@ public class HostSingleton : MonoBehaviour
     }
 
     // Method to create and initialize the host
-    public void CreateHost()
+    public void CreateHost(NetworkObject playerPrefab)
     {
-        GameManager = new HostGameManager(); // Instantiate the host game manager
+        GameManager = new HostGameManager(playerPrefab); // Instantiate the host game manager
     }
 
     // Dispose method to clean up resources
