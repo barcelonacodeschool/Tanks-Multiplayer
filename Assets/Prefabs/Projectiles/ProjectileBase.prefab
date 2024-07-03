@@ -13,6 +13,8 @@ GameObject:
   - component: {fileID: 3743376978706867248}
   - component: {fileID: 4333850467032243683}
   - component: {fileID: 1723692122739698995}
+  - component: {fileID: 4501679920735290956}
+  - component: {fileID: 8868126398906845140}
   m_Layer: 6
   m_Name: ProjectileBase
   m_TagString: Untagged
@@ -122,3 +124,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4aba237fccb9cd54192d25d7180f77f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  projectile: {fileID: 4501679920735290956}
+--- !u!114 &4501679920735290956
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1396243876303278215}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94bcccd898d78bc4182f1fb64422319b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &8868126398906845140
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1396243876303278215}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca3358a56d7b1564f90cf65f2c0dea0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  projectile: {fileID: 4501679920735290956}
+  damage: 5

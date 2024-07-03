@@ -9,6 +9,7 @@ using UnityEngine.EventSystems;
 public class ProjectileLauncher : NetworkBehaviour
 {
     [Header("References")]
+    [SerializeField] private TankPlayer player; // Reference to the TankPlayer component on the player
     [SerializeField] private InputReader inputReader; // Reference to the InputReader scriptable object
     [SerializeField] private Transform projectileSpawnPoint; // Transform where projectiles will be spawned
     [SerializeField] private GameObject serverProjectilePrefab; // Prefab used for projectiles on the server
@@ -79,7 +80,7 @@ public class ProjectileLauncher : NetworkBehaviour
         PrimaryFireServerRpc(projectileSpawnPoint.position, projectileSpawnPoint.up);
 
         // Spawn a dummy projectile on the client for visual feedback
-        SpawnDummyProjectile(projectileSpawnPoint.position, projectileSpawnPoint.up);
+        SpawnDummyProjectile(projectileSpawnPoint.position, projectileSpawnPoint.up, player.TeamIndex.Value);
 
         timer = 1 / fireRate; // Reset the fire rate timer
     }
@@ -117,27 +118,27 @@ public class ProjectileLauncher : NetworkBehaviour
         Physics2D.IgnoreCollision(playerCollider, projectileInstance.GetComponent<Collider2D>());
 
         // Set the projectile's velocity if it has a Rigidbody2D component
-        if (projectileInstance.TryGetComponent<Rigidbody2D>(out Rigidbody2D rb))
+        if (projectileInstance.TryGetComponent<Projectiles>(out Projectiles projectile))
         {
-            rb.velocity = rb.transform.up * projectileSpeed;
+            projectile.Initialise(player.TeamIndex.Value);
         }
 
         // Call the client RPC to spawn dummy projectiles on all clients
-        SpawnDummyProjectileClientRpc(spawnPos, direction);
+        SpawnDummyProjectileClientRpc(spawnPos, direction, player.TeamIndex.Value);
     }
 
     // Client RPC to spawn dummy projectiles on all clients
     [ClientRpc]
-    void SpawnDummyProjectileClientRpc(Vector3 spawnPos, Vector3 direction)
+    void SpawnDummyProjectileClientRpc(Vector3 spawnPos, Vector3 direction, int teamIndex)
     {
         if (IsOwner) { return; } // Skip spawning if this is the owner client
 
         // Spawn a dummy projectile on the client
-        SpawnDummyProjectile(spawnPos, direction);
+        SpawnDummyProjectile(spawnPos, direction, teamIndex);
     }
 
     // Method to spawn a dummy projectile
-    void SpawnDummyProjectile(Vector3 spawnPos, Vector3 direction)
+    void SpawnDummyProjectile(Vector3 spawnPos, Vector3 direction, int teamIndex)
     {
         // Activate the muzzle flash effect
         muzzleFlash.SetActive(true);
@@ -154,6 +155,12 @@ public class ProjectileLauncher : NetworkBehaviour
 
         // Ignore collision between the player and the projectile
         Physics2D.IgnoreCollision(playerCollider, projectileInstance.GetComponent<Collider2D>());
+
+        // Set the projectile's team index
+        if (projectileInstance.TryGetComponent<Projectiles>(out Projectiles projectile))
+        {
+            projectile.Initialise(teamIndex);
+        }
 
         // Set the projectile's velocity if it has a Rigidbody2D component
         if (projectileInstance.TryGetComponent<Rigidbody2D>(out Rigidbody2D rb))

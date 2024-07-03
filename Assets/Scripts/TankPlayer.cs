@@ -47,7 +47,8 @@ public class TankPlayer : NetworkBehaviour
                     ServerSingleton.Instance.GameManager.NetworkServer.GetUserDataByClientId(OwnerClientId);
             }
 
-            // Set the player's name from the user data
+            // Set the player's name from the use
+            // r data
             PlayerName.Value = userData.userName;
 
             // Set the player's team index from the user data

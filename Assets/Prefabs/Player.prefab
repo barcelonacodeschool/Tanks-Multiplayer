@@ -11107,6 +11107,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3b41f5f70c3e954caf35e2dda3a6eb6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  player: {fileID: 7540370201494458673}
   inputReader: {fileID: 11400000, guid: da2a3971feaac1243b7784a55264f387, type: 2}
   projectileSpawnPoint: {fileID: 1605850698535830934}
   serverProjectilePrefab: {fileID: 4955046638326551936, guid: a6f0bb1afdb319c429ce00c0b94b3ca5, type: 3}
