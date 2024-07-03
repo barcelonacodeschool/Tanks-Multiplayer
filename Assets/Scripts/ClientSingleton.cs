@@ -21,7 +21,6 @@ public class ClientSingleton : MonoBehaviour
 
             if (instance == null)
             {
-                Debug.LogError("No ClientSingleton in the scene"); // Log an error if no instance found
                 return null;
             }
 

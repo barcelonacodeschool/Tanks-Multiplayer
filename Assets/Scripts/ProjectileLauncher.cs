@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 // ProjectileLauncher handles the spawning and launching of projectiles
 public class ProjectileLauncher : NetworkBehaviour
@@ -22,6 +23,7 @@ public class ProjectileLauncher : NetworkBehaviour
     [SerializeField] private float muzzleFlashDuration; // Duration of the muzzle flash effect
     [SerializeField] private int costToFire; // Cost in coins to fire a projectile
 
+    private bool isPointerOverUI; // Flag to track if the cursor is hovering over a UI element
     private bool shouldFire; // Flag to track if the primary fire action should be performed
     private float timer; // Timer to control the rate of fire
     private float muzzleFlashTimer; // Timer for the muzzle flash effect
@@ -60,6 +62,8 @@ public class ProjectileLauncher : NetworkBehaviour
 
         if (!IsOwner) { return; } // Check if the local player owns this object
 
+        isPointerOverUI = EventSystem.current.IsPointerOverGameObject(); // Check if the pointer is over a UI element
+
         if (timer > 0)
         {
             timer -= Time.deltaTime; // Decrease the fire rate timer by the time elapsed since last frame
@@ -83,6 +87,12 @@ public class ProjectileLauncher : NetworkBehaviour
     // Method to handle the primary fire input action
     void HandlePrimaryFire(bool shouldFire)
     {
+        // Ignore fire input if the pointer is over a UI element
+        if (shouldFire)
+        {
+            if (isPointerOverUI) { return; }
+        }
+
         this.shouldFire = shouldFire; // Set the shouldFire flag based on input
     }
 
