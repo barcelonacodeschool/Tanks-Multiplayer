@@ -132,23 +132,21 @@ public class HostGameManager : IDisposable
     // Shutdown method to clean up resources
     public async void Shutdown()
     {
+        if (string.IsNullOrEmpty(lobbyId)) { return; }
+
         // Stop the heartbeat coroutine
         HostSingleton.Instance.StopCoroutine(nameof(HearbeatLobby));
 
-        // Delete the lobby if it exists
-        if (!string.IsNullOrEmpty(lobbyId))
+        try
         {
-            try
-            {
-                await Lobbies.Instance.DeleteLobbyAsync(lobbyId);
-            }
-            catch (LobbyServiceException e)
-            {
-                Debug.Log(e);
-            }
-
-            lobbyId = string.Empty;
+            await Lobbies.Instance.DeleteLobbyAsync(lobbyId); // Delete the lobby
         }
+        catch (LobbyServiceException e)
+        {
+            Debug.Log(e); // Log any exceptions that occur while deleting the lobby
+        }
+
+        lobbyId = string.Empty;
 
         // Unregister the client left event
         NetworkServer.OnClientLeft -= HandleClientLeft;

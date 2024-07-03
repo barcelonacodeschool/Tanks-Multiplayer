@@ -33,7 +33,7 @@ public class MainMenu : MonoBehaviour
         {
             queueStatusText.text = "Cancelling..."; // Update the queue status text
             isCancelling = true;
-            // Cancel matchmaking (implementation not shown)
+            await ClientSingleton.Instance.GameManager.CancelMatchmaking(); // Await the cancellation of matchmaking
             isCancelling = false;
             isMatchmaking = false;
             findMatchButtonText.text = "Find Match"; // Update the button text
@@ -41,10 +41,33 @@ public class MainMenu : MonoBehaviour
             return;
         }
 
-        // Start queue
+        ClientSingleton.Instance.GameManager.MatchmakeAsync(OnMatchMade); // Start matchmaking asynchronously
         findMatchButtonText.text = "Cancel"; // Update the button text
         queueStatusText.text = "Searching..."; // Update the queue status text
         isMatchmaking = true;
+    }
+
+    // Callback method to handle match result
+    private void OnMatchMade(MatchmakerPollingResult result)
+    {
+        switch (result)
+        {
+            case MatchmakerPollingResult.Success:
+                queueStatusText.text = "Connecting..."; // Update status text on success
+                break;
+            case MatchmakerPollingResult.TicketCreationError:
+                queueStatusText.text = "TicketCreationError"; // Update status text on ticket creation error
+                break;
+            case MatchmakerPollingResult.TicketCancellationError:
+                queueStatusText.text = "TicketCancellationError"; // Update status text on ticket cancellation error
+                break;
+            case MatchmakerPollingResult.TicketRetrievalError:
+                queueStatusText.text = "TicketRetrievalError"; // Update status text on ticket retrieval error
+                break;
+            case MatchmakerPollingResult.MatchAssignmentError:
+                queueStatusText.text = "MatchAssignmentError"; // Update status text on match assignment error
+                break;
+        }
     }
 
     // Method to start the host asynchronously

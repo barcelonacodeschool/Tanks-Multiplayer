@@ -54,6 +54,14 @@ public class ClientGameManager : IDisposable
         SceneManager.LoadScene(MenuSceneName); // Load the main menu scene
     }
 
+    // Method to start the client using IP and port
+    public void StartClient(string ip, int port)
+    {
+        UnityTransport transport = NetworkManager.Singleton.GetComponent<UnityTransport>(); // Get the UnityTransport component from the NetworkManager
+        transport.SetConnectionData(ip, (ushort)port); // Set the connection data with IP and port
+        ConnectClient(); // Connect the client
+    }
+
     // Method to start the client asynchronously using a join code
     public async Task StartClientAsync(string joinCode)
     {
@@ -72,12 +80,30 @@ public class ClientGameManager : IDisposable
         RelayServerData relayServerData = new RelayServerData(allocation, "dtls"); // Create relay server data using the allocation
         transport.SetRelayServerData(relayServerData); // Set the relay server data for the transport
 
+        ConnectClient(); // Connect the client
+    }
+
+    // Method to connect the client
+    private void ConnectClient()
+    {
         string payload = JsonUtility.ToJson(userData); // Serialize the user data to JSON
         byte[] payloadBytes = Encoding.UTF8.GetBytes(payload); // Encode the JSON to bytes
 
         NetworkManager.Singleton.NetworkConfig.ConnectionData = payloadBytes; // Set the connection data for the NetworkManager
 
         NetworkManager.Singleton.StartClient(); // Start the client
+    }
+
+    // Method to perform matchmaking asynchronously
+    public async void MatchmakeAsync(Action<MatchmakerPollingResult> onMatchmakeResponse)
+    {
+        if (matchmaker.IsMatchmaking)
+        {
+            return;
+        }
+
+        MatchmakerPollingResult matchResult = await GetMatchAsync(); // Get match result
+        onMatchmakeResponse?.Invoke(matchResult); // Invoke the response callback
     }
 
     // Method to get a match asynchronously
@@ -87,17 +113,24 @@ public class ClientGameManager : IDisposable
 
         if (matchmakingResult.result == MatchmakerPollingResult.Success)
         {
-            // Connect to server (implementation not shown)
+            StartClient(matchmakingResult.ip, matchmakingResult.port); // Start the client with match result IP and port
         }
 
         return matchmakingResult.result; // Return the matchmaking result
+    }
+
+    // Method to cancel matchmaking asynchronously
+    public async Task CancelMatchmaking()
+    {
+        // Await matchmaking cancellation
+        await matchmaker.CancelMatchmaking(); 
     }
 
     // Method to disconnect the client
     public void Disconnect()
     {
         // Disconnect the network client
-        networkClient.Disconnect(); 
+        networkClient.Disconnect();
     }
 
     // Dispose method to clean up resources
