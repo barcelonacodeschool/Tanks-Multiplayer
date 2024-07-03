@@ -7,10 +7,10 @@ using UnityEngine;
 // LobbiesList manages the list of lobbies and handles joining and refreshing lobbies
 public class LobbiesList : MonoBehaviour
 {
+    [SerializeField] private MainMenu mainMenu; // Reference to the main menu script
     [SerializeField] private Transform lobbyItemParent; // Parent transform to hold lobby item UI elements
     [SerializeField] private LobbyItem lobbyItemPrefab; // Prefab for the lobby item UI elements
 
-    private bool isJoining; // Flag to track if a join operation is in progress
     private bool isRefreshing; // Flag to track if a refresh operation is in progress
 
     // This method is called when the script instance is enabled
@@ -65,24 +65,9 @@ public class LobbiesList : MonoBehaviour
     }
 
     // Method to join a lobby asynchronously
-    public async void JoinAsync(Lobby lobby)
+    public void JoinAsync(Lobby lobby)
     {
-        if (isJoining) { return; } // Return if a join operation is already in progress
-
-        isJoining = true; // Set the join flag
-
-        try
-        {
-            Lobby joiningLobby = await Lobbies.Instance.JoinLobbyByIdAsync(lobby.Id); // Join the lobby by ID
-            string joinCode = joiningLobby.Data["JoinCode"].Value; // Retrieve the join code from the lobby data
-
-            await ClientSingleton.Instance.GameManager.StartClientAsync(joinCode); // Start the client using the join code
-        }
-        catch (LobbyServiceException e)
-        {
-            Debug.Log(e); // Log any exceptions
-        }
-
-        isJoining = false; // Reset the join flag
+        // Call the main menu's JoinAsync method to join the lobby
+        mainMenu.JoinAsync(lobby);
     }
 }

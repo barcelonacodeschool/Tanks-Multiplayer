@@ -1,6 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Services.Lobbies;
+using Unity.Services.Lobbies.Models;
 using UnityEngine;
 
 public class MainMenu : MonoBehaviour
@@ -12,6 +15,8 @@ public class MainMenu : MonoBehaviour
 
     private bool isMatchmaking; // Flag to indicate if matchmaking is in progress
     private bool isCancelling; // Flag to indicate if matchmaking cancellation is in progress
+    private bool isBusy; // Flag to indicate if an operation is in progress
+    private float timeInQueue; // Timer for how long the user has been in the queue
 
     // Method called when the script instance is being loaded
     private void Start()
@@ -24,6 +29,17 @@ public class MainMenu : MonoBehaviour
         queueTimerText.text = string.Empty; // Clear the queue timer text
     }
 
+    // Method called every frame to update the queue timer
+    private void Update()
+    {
+        if (isMatchmaking)
+        {
+            timeInQueue += Time.deltaTime; // Increment the time in queue
+            TimeSpan ts = TimeSpan.FromSeconds(timeInQueue); // Convert time to TimeSpan
+            queueTimerText.text = string.Format("{0:00}:{1:00}", ts.Minutes, ts.Seconds); // Update the queue timer text
+        }
+    }
+
     // Method called when the find match button is pressed
     public async void FindMatchPressed()
     {
@@ -32,19 +48,25 @@ public class MainMenu : MonoBehaviour
         if (isMatchmaking)
         {
             queueStatusText.text = "Cancelling..."; // Update the queue status text
-            isCancelling = true;
+            isCancelling = true; // Set cancelling flag
             await ClientSingleton.Instance.GameManager.CancelMatchmaking(); // Await the cancellation of matchmaking
-            isCancelling = false;
-            isMatchmaking = false;
+            isCancelling = false; // Reset cancelling flag
+            isMatchmaking = false; // Reset matchmaking flag
+            isBusy = false; // Reset busy flag
             findMatchButtonText.text = "Find Match"; // Update the button text
             queueStatusText.text = string.Empty; // Clear the queue status text
+            queueTimerText.text = string.Empty; // Clear the queue timer text
             return;
         }
+
+        if (isBusy) { return; } // Return if another operation is in progress
 
         ClientSingleton.Instance.GameManager.MatchmakeAsync(OnMatchMade); // Start matchmaking asynchronously
         findMatchButtonText.text = "Cancel"; // Update the button text
         queueStatusText.text = "Searching..."; // Update the queue status text
-        isMatchmaking = true;
+        timeInQueue = 0f; // Reset the time in queue
+        isMatchmaking = true; // Set matchmaking flag
+        isBusy = true; // Set busy flag
     }
 
     // Callback method to handle match result
@@ -73,12 +95,46 @@ public class MainMenu : MonoBehaviour
     // Method to start the host asynchronously
     public async void StartHost()
     {
+        if (isBusy) { return; } // Return if another operation is in progress
+
+        isBusy = true; // Set busy flag
+
         await HostSingleton.Instance.GameManager.StartHostAsync(); // Await the start of the host
+
+        isBusy = false; // Reset busy flag
     }
 
     // Method to start the client asynchronously
     public async void StartClient()
     {
+        if (isBusy) { return; } // Return if another operation is in progress
+
+        isBusy = true; // Set busy flag
+
         await ClientSingleton.Instance.GameManager.StartClientAsync(joinCodeField.text); // Await the start of the client with the join code
+
+        isBusy = false; // Reset busy flag
+    }
+
+    // Method to join a lobby asynchronously
+    public async void JoinAsync(Lobby lobby)
+    {
+        if (isBusy) { return; } // Return if another operation is in progress
+
+        isBusy = true; // Set busy flag
+
+        try
+        {
+            Lobby joiningLobby = await Lobbies.Instance.JoinLobbyByIdAsync(lobby.Id); // Attempt to join the lobby by ID
+            string joinCode = joiningLobby.Data["JoinCode"].Value; // Retrieve the join code from the lobby data
+
+            await ClientSingleton.Instance.GameManager.StartClientAsync(joinCode); // Start the client with the join code
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.Log(e); // Log any exceptions
+        }
+
+        isBusy = false; // Reset busy flag
     }
 }
