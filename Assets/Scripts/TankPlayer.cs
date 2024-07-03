@@ -32,9 +32,19 @@ public class TankPlayer : NetworkBehaviour
         // Check if this instance is running on the server
         if (IsServer)
         {
-            // Get the user data for the owner client ID
-            UserData userData =
-                HostSingleton.Instance.GameManager.NetworkServer.GetUserDataByClientId(OwnerClientId);
+            UserData userData = null; // Initialize user data variable
+
+            // Get user data based on whether the instance is host or server
+            if (IsHost)
+            {
+                userData =
+                    HostSingleton.Instance.GameManager.NetworkServer.GetUserDataByClientId(OwnerClientId);
+            }
+            else
+            {
+                userData =
+                    ServerSingleton.Instance.GameManager.NetworkServer.GetUserDataByClientId(OwnerClientId);
+            }
 
             // Set the player's name from the user data
             PlayerName.Value = userData.userName;

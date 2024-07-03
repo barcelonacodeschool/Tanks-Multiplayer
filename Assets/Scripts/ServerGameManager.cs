@@ -26,7 +26,7 @@ public class ServerGameManager : IDisposable
     private MatchplayBackfiller backfiller;
 
     // Network server instance
-    private NetworkServer networkServer;
+    public NetworkServer NetworkServer { get; private set; }
 
     // Service for managing multiplay allocation
     private MultiplayAllocationService multiplayAllocationService;
@@ -42,7 +42,7 @@ public class ServerGameManager : IDisposable
         this.queryPort = queryPort;
 
         // Initialize the network server with the provided network manager
-        networkServer = new NetworkServer(manager);
+        NetworkServer = new NetworkServer(manager);
 
         // Initialize the multiplay allocation service
         multiplayAllocationService = new MultiplayAllocationService();
@@ -65,8 +65,8 @@ public class ServerGameManager : IDisposable
                 await StartBackfill(matchmakerPayload);
 
                 // Subscribe to user join and leave events
-                networkServer.OnUserJoined += UserJoined;
-                networkServer.OnUserLeft += UserLeft;
+                NetworkServer.OnUserJoined += UserJoined;
+                NetworkServer.OnUserLeft += UserLeft;
             }
             else
             {
@@ -80,7 +80,7 @@ public class ServerGameManager : IDisposable
         }
 
         // Open network server connection and check if it started successfully
-        if (!networkServer.OpenConnection(serverIP, serverPort))
+        if (!NetworkServer.OpenConnection(serverIP, serverPort))
         {
             Debug.LogWarning("NetworkServer did not start as expected.");
             return;
@@ -176,14 +176,14 @@ public class ServerGameManager : IDisposable
     public void Dispose()
     {
         // Unsubscribe from user join and leave events
-        networkServer.OnUserJoined -= UserJoined;
-        networkServer.OnUserLeft -= UserLeft;
+        NetworkServer.OnUserJoined -= UserJoined;
+        NetworkServer.OnUserLeft -= UserLeft;
 
         // Dispose of the backfiller if it exists
         backfiller?.Dispose();
 
         // Dispose of the multiplay allocation service and network server
         multiplayAllocationService?.Dispose();
-        networkServer?.Dispose();
+        NetworkServer?.Dispose();
     }
 }

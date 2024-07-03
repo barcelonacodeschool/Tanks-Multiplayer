@@ -10,6 +10,8 @@ public class ApplicationController : MonoBehaviour
     [SerializeField] private HostSingleton hostPrefab; // Reference to the host singleton prefab
     [SerializeField] private ServerSingleton serverPrefab; // Reference to the server singleton prefab
 
+    private ApplicationData appData; // Instance of ApplicationData to manage application-specific data
+
     // This method is called when the script instance is being loaded
     private async void Start()
     {
@@ -24,6 +26,9 @@ public class ApplicationController : MonoBehaviour
     {
         if (isDedicatedServer)
         {
+            // Initialize application data for a dedicated server
+            appData = new ApplicationData();
+
             // Instantiate the server singleton
             ServerSingleton serverSingleton = Instantiate(serverPrefab);
 
