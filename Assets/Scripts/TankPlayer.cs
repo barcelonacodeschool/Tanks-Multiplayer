@@ -21,6 +21,7 @@ public class TankPlayer : NetworkBehaviour
     [SerializeField] private Color ownerColor; // Color for the owner's minimap icon
 
     public NetworkVariable<FixedString32Bytes> PlayerName = new NetworkVariable<FixedString32Bytes>(); // Network variable to store the player's name
+    public NetworkVariable<int> TeamIndex = new NetworkVariable<int>(); // Network variable to store the player's team index
 
     // Events to notify when a player is spawned or despawned
     public static event Action<TankPlayer> OnPlayerSpawned;
@@ -48,6 +49,9 @@ public class TankPlayer : NetworkBehaviour
 
             // Set the player's name from the user data
             PlayerName.Value = userData.userName;
+
+            // Set the player's team index from the user data
+            TeamIndex.Value = userData.teamIndex;
 
             // Invoke the OnPlayerSpawned event
             OnPlayerSpawned?.Invoke(this);

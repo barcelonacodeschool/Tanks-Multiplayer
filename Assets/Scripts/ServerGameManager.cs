@@ -32,6 +32,9 @@ public class ServerGameManager : IDisposable
     // Service for managing multiplay allocation
     private MultiplayAllocationService multiplayAllocationService;
 
+    // Dictionary to map team IDs to team indices
+    private Dictionary<string, int> teamIdToTeamIndex = new Dictionary<string, int>();
+
     // Constructor to initialize the server game manager with IP, port,
     // query port, network manager, and player prefab
     public ServerGameManager(string serverIP, int serverPort,
@@ -126,7 +129,16 @@ public class ServerGameManager : IDisposable
     {
         // Get the team of the user
         Team team = backfiller.GetTeamByUserId(user.userAuthId);
-        Debug.Log($"{user.userAuthId} {team.TeamId}");
+
+        // Check if the team ID is already mapped to a team index
+        if (!teamIdToTeamIndex.TryGetValue(team.TeamId, out int teamIndex))
+        {
+            // Assign a new team index if not already mapped
+            teamIndex = teamIdToTeamIndex.Count;
+            teamIdToTeamIndex.Add(team.TeamId, teamIndex);
+        }
+
+        user.teamIndex = teamIndex;
 
         // Increment the player count in the multiplay allocation service
         multiplayAllocationService.AddPlayer();
