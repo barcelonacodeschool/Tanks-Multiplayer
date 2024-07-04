@@ -7,6 +7,8 @@ public struct LeaderboardEntityState : INetworkSerializable, IEquatable<Leaderbo
 {
     // Client ID of the player
     public ulong ClientId;
+    // Team index of the player
+    public int TeamIndex;
     // Player name as a fixed-length string
     public FixedString32Bytes PlayerName;
     // Number of coins the player has
@@ -16,6 +18,7 @@ public struct LeaderboardEntityState : INetworkSerializable, IEquatable<Leaderbo
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         serializer.SerializeValue(ref ClientId); // Serialize/deserialize the ClientId
+        serializer.SerializeValue(ref TeamIndex); // Serialize/deserialize the TeamIndex
         serializer.SerializeValue(ref PlayerName); // Serialize/deserialize the PlayerName
         serializer.SerializeValue(ref Coins); // Serialize/deserialize the Coins
     }
@@ -23,8 +26,9 @@ public struct LeaderboardEntityState : INetworkSerializable, IEquatable<Leaderbo
     // Method to check equality between two LeaderboardEntityState instances
     public bool Equals(LeaderboardEntityState other)
     {
-        // Check if ClientId, PlayerName, and Coins are equal
+        // Check if ClientId, TeamIndex, PlayerName, and Coins are equal
         return ClientId == other.ClientId &&
+            TeamIndex == other.TeamIndex &&
             PlayerName.Equals(other.PlayerName) &&
             Coins == other.Coins;
     }

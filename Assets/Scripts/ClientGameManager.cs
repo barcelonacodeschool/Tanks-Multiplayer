@@ -20,7 +20,8 @@ public class ClientGameManager : IDisposable
 
     private NetworkClient networkClient; // Network client instance to manage network-related operations
     private MatchplayMatchmaker matchmaker; // Instance for managing matchmaking
-    private UserData userData; // User data for the client
+
+    public UserData UserData { get; private set; } // User data for the client
 
     private const string MenuSceneName = "Main Menu"; // Name of the main menu scene
 
@@ -37,7 +38,7 @@ public class ClientGameManager : IDisposable
         if (authState == AuthState.Authenticated)
         {
             // Create a UserData object with the player's name and authentication ID
-            userData = new UserData
+            UserData = new UserData
             {
                 userName = PlayerPrefs.GetString(NameSelector.PlayerNameKey, "Missing Name"),
                 userAuthId = AuthenticationService.Instance.PlayerId
@@ -86,7 +87,7 @@ public class ClientGameManager : IDisposable
     // Method to connect the client
     private void ConnectClient()
     {
-        string payload = JsonUtility.ToJson(userData); // Serialize the user data to JSON
+        string payload = JsonUtility.ToJson(UserData); // Serialize the user data to JSON
         byte[] payloadBytes = Encoding.UTF8.GetBytes(payload); // Encode the JSON to bytes
 
         NetworkManager.Singleton.NetworkConfig.ConnectionData = payloadBytes; // Set the connection data for the NetworkManager
@@ -102,7 +103,7 @@ public class ClientGameManager : IDisposable
             return;
         }
 
-        userData.userGamePreferences.gameQueue = isTeamQueue ? GameQueue.Team : GameQueue.Solo; // Set game queue preference
+        UserData.userGamePreferences.gameQueue = isTeamQueue ? GameQueue.Team : GameQueue.Solo; // Set game queue preference
         MatchmakerPollingResult matchResult = await GetMatchAsync(); // Get match result
         onMatchmakeResponse?.Invoke(matchResult); // Invoke the response callback
     }
@@ -110,7 +111,7 @@ public class ClientGameManager : IDisposable
     // Method to get a match asynchronously
     private async Task<MatchmakerPollingResult> GetMatchAsync()
     {
-        MatchmakingResult matchmakingResult = await matchmaker.Matchmake(userData); // Perform matchmaking
+        MatchmakingResult matchmakingResult = await matchmaker.Matchmake(UserData); // Perform matchmaking
 
         if (matchmakingResult.result == MatchmakerPollingResult.Success)
         {

@@ -10,15 +10,28 @@ public class Leaderboard : NetworkBehaviour
 {
     // Reference to the parent transform that will hold leaderboard entities
     [SerializeField] private Transform leaderboardEntityHolder;
+    // Parent transform for team leaderboard entities
+    [SerializeField] private Transform teamLeaderboardEntityHolder;
+    // Background for the team leaderboard
+    [SerializeField] private GameObject teamLeaderboardBackground;
+
     // Reference to the prefab for displaying leaderboard entities
     [SerializeField] private LeaderboardEntityDisplay leaderboardEntityPrefab;
     // Number of entities to display on the leaderboard
     [SerializeField] private int entitiesToDisplay = 8;
+    // Color for the local player's leaderboard entry
+    [SerializeField] private Color ownerColor;
+    // Array of team names
+    [SerializeField] private string[] teamNames;
+    // Reference to the TeamColorLookup scriptable object
+    [SerializeField] private TeamColorLookup teamColorLookup;
 
     // Network list to store the state of leaderboard entities
     private NetworkList<LeaderboardEntityState> leaderboardEntities;
     // List to store the instantiated leaderboard entity displays
     private List<LeaderboardEntityDisplay> entityDisplays = new List<LeaderboardEntityDisplay>();
+    // List of team leaderboard displays
+    private List<LeaderboardEntityDisplay> teamEntityDisplays = new List<LeaderboardEntityDisplay>();
 
     // Update is called once per frame
     private void Awake()
@@ -32,6 +45,28 @@ public class Leaderboard : NetworkBehaviour
     {
         if (IsClient)
         {
+            // Check if the game queue is set to team mode
+            if (ClientSingleton.Instance.GameManager.UserData.userGamePreferences.gameQueue == GameQueue.Team)
+            {
+                // Show the team leaderboard background
+                teamLeaderboardBackground.SetActive(true);
+
+                // Initialize team leaderboard entities
+                for (int i = 0; i < teamNames.Length; i++)
+                {
+                    LeaderboardEntityDisplay teamLeaderboardEntity
+                        = Instantiate(leaderboardEntityPrefab, teamLeaderboardEntityHolder);
+
+                    teamLeaderboardEntity.Initialise(i, teamNames[i], 0);
+
+                    // Set team color
+                    Color teamColor = teamColorLookup.GetTeamColor(i);
+                    teamLeaderboardEntity.SetColor(teamColor);
+
+                    teamEntityDisplays.Add(teamLeaderboardEntity);
+                }
+            }
+
             // Subscribe to changes in the leaderboard entities list
             leaderboardEntities.OnListChanged += HandleLeaderboardEntitiesChanged;
             // Handle existing leaderboard entities
@@ -96,6 +131,14 @@ public class Leaderboard : NetworkBehaviour
                         changeEvent.Value.ClientId,
                         changeEvent.Value.PlayerName,
                         changeEvent.Value.Coins);
+
+
+                    // Highlight the local player's entry
+                    if (NetworkManager.Singleton.LocalClientId == changeEvent.Value.ClientId)
+                    {
+                        leaderboardEntity.SetColor(ownerColor);
+                    }
+
                     // Add the display to the list of displays
                     entityDisplays.Add(leaderboardEntity);
                 }
@@ -152,6 +195,35 @@ public class Leaderboard : NetworkBehaviour
                 myDisplay.gameObject.SetActive(true);
             }
         }
+
+        // Handle team leaderboard updates
+        if (!teamLeaderboardBackground.activeSelf) { return; }
+
+        LeaderboardEntityDisplay teamDisplay =
+            teamEntityDisplays.FirstOrDefault(x => x.TeamIndex == changeEvent.Value.TeamIndex);
+
+        if (teamDisplay != null)
+        {
+            // Update team coins on remove or value change
+            if (changeEvent.Type == NetworkListEvent<LeaderboardEntityState>.EventType.Remove)
+            {
+                teamDisplay.UpdateCoins(teamDisplay.Coins - changeEvent.Value.Coins);
+            }
+            else
+            {
+                teamDisplay.UpdateCoins(teamDisplay.Coins + (changeEvent.Value.Coins - changeEvent.PreviousValue.Coins));
+            }
+
+            // Sort the team displays by coin count
+            teamEntityDisplays.Sort((x, y) => y.Coins.CompareTo(x.Coins));
+
+            // Update the team display order and text
+            for (int i = 0; i < teamEntityDisplays.Count; i++)
+            {
+                teamEntityDisplays[i].transform.SetSiblingIndex(i);
+                teamEntityDisplays[i].UpdateText();
+            }
+        }
     }
 
     // Method to handle player spawn events
@@ -162,6 +234,7 @@ public class Leaderboard : NetworkBehaviour
         {
             ClientId = player.OwnerClientId,
             PlayerName = player.PlayerName.Value,
+            TeamIndex = player.TeamIndex.Value,
             Coins = 0
         });
 
@@ -200,6 +273,7 @@ public class Leaderboard : NetworkBehaviour
             {
                 ClientId = leaderboardEntities[i].ClientId,
                 PlayerName = leaderboardEntities[i].PlayerName,
+                TeamIndex = leaderboardEntities[i].TeamIndex,
                 Coins = newCoins
             };
 
